@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LAS Fleet Monitoring System — PT. Pelayaran Lestari Abadi Serasi</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy-950:#020b18;--navy-900:#040f22;--navy-800:#071630;--navy-700:#0d2040;
+  --glass-bg:rgba(7,22,48,0.72);--glass-bg2:rgba(13,32,64,0.55);
+  --glass-border:rgba(0,180,255,0.16);--glass-border2:rgba(0,180,255,0.08);
+  --neon:#00d4ff;--neon2:#00ffcc;--orange:#ff6b35;--orange2:#ffaa44;
+  --text-100:#e8f4ff;--text-200:#b0cfe8;--text-400:#5a8aaa;--text-600:#2a4a6a;
+  --success:#00e5a0;--danger:#ff3d5a;--warning:#ffb020;--info:#00d4ff;
+  --sidebar-w:252px;--topbar-h:62px;--radius:14px;--radius-sm:9px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{font-family:'Outfit',sans-serif;background:var(--navy-950);color:var(--text-100);height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,180,255,0.2);border-radius:2px}
+.mono{font-family:'IBM Plex Mono',monospace}
+#bg{position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 90% 70% at 10% 0%,rgba(0,80,160,0.18) 0%,transparent 55%),
+             radial-gradient(ellipse 60% 50% at 85% 90%,rgba(255,107,53,0.07) 0%,transparent 50%),
+             linear-gradient(180deg,var(--navy-950) 0%,#030d1e 100%)}
+#bg::after{content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(0,180,255,0.025) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,180,255,0.025) 1px,transparent 1px);
+  background-size:50px 50px}
+
+/* ── LOGIN ── */
+#login-page{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(0,100,200,0.15) 0%,transparent 60%),
+             radial-gradient(ellipse 60% 50% at 80% 80%,rgba(255,107,53,0.08) 0%,transparent 50%),var(--navy-950)}
+#login-page::before{content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(0,180,255,0.03) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(0,180,255,0.03) 1px,transparent 1px);background-size:50px 50px}
+.login-box{position:relative;z-index:1;background:rgba(7,22,48,0.88);border:1px solid rgba(0,212,255,0.2);
+  border-radius:20px;padding:40px 44px;width:420px;backdrop-filter:blur(24px);
+  box-shadow:0 0 60px rgba(0,100,200,0.2)}
+.login-box::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--neon),transparent)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo-icon{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--neon),#0088cc);
+  display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;box-shadow:0 0 24px rgba(0,212,255,0.3)}
+.login-logo h1{font-size:15px;font-weight:700;color:var(--text-100);letter-spacing:0.3px}
+.login-logo p{font-size:10px;color:var(--text-400);letter-spacing:1.2px;text-transform:uppercase;margin-top:3px}
+.form-field{margin-bottom:14px}
+.form-field label{display:block;font-size:10px;font-weight:700;color:var(--text-400);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.field-wrap{position:relative}
+.field-wrap .fi{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-400);font-size:13px}
+.field-wrap input{width:100%;padding:10px 12px 10px 38px;background:rgba(0,0,0,0.35);border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);color:var(--text-100);font-family:'Outfit',sans-serif;font-size:13px;outline:none;transition:all .2s}
+.field-wrap input:focus{border-color:rgba(0,212,255,0.4);background:rgba(0,20,50,0.5)}
+.field-wrap input::placeholder{color:var(--text-600)}
+.login-roles{display:flex;gap:8px;margin-bottom:18px}
+.role-chip{flex:1;padding:8px;text-align:center;border-radius:var(--radius-sm);
+  background:rgba(0,0,0,0.3);border:1px solid var(--glass-border2);font-size:11px;color:var(--text-400);cursor:pointer;transition:all .2s}
+.role-chip.active{background:rgba(0,212,255,0.12);border-color:rgba(0,212,255,0.3);color:var(--neon)}
+.btn-login{width:100%;padding:12px;border:none;border-radius:var(--radius-sm);background:linear-gradient(135deg,#0099dd,#0066aa);
+  color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 20px rgba(0,150,220,0.3)}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 0 30px rgba(0,180,255,0.4)}
+.login-hint{text-align:center;font-size:11px;color:var(--text-600);margin-top:14px}
+
+/* ── LAYOUT ── */
+#app{position:relative;z-index:1;height:100vh;display:flex}
+#sidebar{width:var(--sidebar-w);flex-shrink:0;background:rgba(4,15,34,0.92);border-right:1px solid var(--glass-border2);
+  backdrop-filter:blur(20px);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.sb-head{padding:16px 14px 12px;border-bottom:1px solid var(--glass-border2);flex-shrink:0}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:36px;height:36px;border-radius:9px;flex-shrink:0;background:linear-gradient(135deg,var(--neon),#0077bb);
+  display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 14px rgba(0,212,255,0.25)}
+.brand-text .b1{font-size:13px;font-weight:800;letter-spacing:1px;color:var(--text-100);line-height:1}
+.brand-text .b2{font-size:9px;color:var(--text-400);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+.sb-nav{flex:1;padding:6px 10px}
+.nav-sec-lbl{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-600);padding:9px 8px 5px}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;
+  font-size:12.5px;font-weight:500;color:var(--text-400);transition:all .18s;position:relative;margin-bottom:1px;white-space:nowrap}
+.ni:hover{background:rgba(0,180,255,0.07);color:var(--text-200)}
+.ni.active{background:rgba(0,212,255,0.12);color:var(--neon);border:1px solid rgba(0,212,255,0.18)}
+.ni.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--neon);border-radius:0 2px 2px 0}
+.ni .icon{width:18px;text-align:center;font-size:13px;flex-shrink:0}
+.nbadge{margin-left:auto;background:var(--danger);color:#fff;font-size:9px;font-weight:700;
+  padding:1px 5px;border-radius:6px;min-width:16px;text-align:center}
+.sb-foot{flex-shrink:0;padding:10px;border-top:1px solid var(--glass-border2)}
+.user-pill{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;
+  background:rgba(0,0,0,0.3);border:1px solid var(--glass-border2);cursor:pointer;transition:all .2s}
+.user-pill:hover{background:rgba(0,180,255,0.07)}
+.uav{width:28px;height:28px;border-radius:7px;flex-shrink:0;background:linear-gradient(135deg,var(--orange),#cc4400);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.uinfo .u1{font-size:12px;font-weight:600;color:var(--text-100)}
+.uinfo .u2{font-size:10px;color:var(--text-400)}
+.logout-btn{margin-left:auto;background:none;border:none;color:var(--text-600);cursor:pointer;font-size:13px;padding:4px;transition:color .2s}
+.logout-btn:hover{color:var(--danger)}
+
+/* ── CONTENT ── */
+#content-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#topbar{height:var(--topbar-h);flex-shrink:0;background:rgba(4,15,34,0.88);border-bottom:1px solid var(--glass-border2);
+  backdrop-filter:blur(20px);display:flex;align-items:center;padding:0 20px;gap:12px}
+.tb-info{flex:1}
+.tb-info .t1{font-size:15px;font-weight:700}
+.tb-info .t2{font-size:11px;color:var(--text-400);margin-top:1px}
+.tb-search{display:flex;align-items:center;gap:7px;background:rgba(0,0,0,0.3);border:1px solid var(--glass-border2);border-radius:9px;padding:7px 11px}
+.tb-search input{background:none;border:none;outline:none;color:var(--text-100);font-family:'Outfit',sans-serif;font-size:12px;width:190px}
+.tb-search input::placeholder{color:var(--text-600)}
+.tb-icon{width:32px;height:32px;border-radius:8px;background:rgba(0,0,0,0.3);border:1px solid var(--glass-border2);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--text-400);transition:all .2s;position:relative}
+.tb-icon:hover{background:rgba(0,180,255,0.1);color:var(--neon)}
+.tb-icon .dot{position:absolute;top:5px;right:5px;width:7px;height:7px;background:var(--danger);border-radius:50%;border:2px solid var(--navy-900)}
+.tb-profile{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border:1px solid var(--glass-border2);
+  padding:4px 11px 4px 4px;border-radius:20px;cursor:pointer;transition:all .2s}
+.tb-profile:hover{background:rgba(0,180,255,0.08)}
+.tp-av{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--orange),#cc4400);
+  display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
+#page-area{flex:1;overflow-y:auto;padding:18px 20px 22px}
+
+/* ── COMPONENTS ── */
+.card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius);backdrop-filter:blur(12px);padding:16px 18px}
+.card-sm{padding:12px 14px}
+.ct{font-size:12px;font-weight:600;color:var(--text-400);letter-spacing:.3px;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.ct i{font-size:13px}
+.ctop{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sc{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;transition:all .2s;cursor:default}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent);opacity:.3}
+.sc:hover{border-color:rgba(0,212,255,0.25);transform:translateY(-1px)}
+.sc .lbl{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text-400)}
+.sc .val{font-size:26px;font-weight:800;margin:4px 0 2px;font-family:'IBM Plex Mono',monospace}
+.sc .sub{font-size:10.5px;display:flex;align-items:center;gap:4px}
+.sc .sub.up{color:var(--success)} .sc .sub.down{color:var(--danger)} .sc .sub.warn{color:var(--warning)}
+.sc .ico{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:28px;opacity:.1}
+.sc .bar{position:absolute;bottom:0;left:0;right:0;height:2px}
+/* Grid */
+.g{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+.g31{grid-template-columns:3fr 1fr} .g21{grid-template-columns:2fr 1fr} .g112{grid-template-columns:1fr 1fr 2fr}
+/* Spacers */
+.mb8{margin-bottom:8px} .mb12{margin-bottom:12px} .mb14{margin-bottom:14px} .mb16{margin-bottom:16px} .mb20{margin-bottom:20px}
+.mt8{margin-top:8px} .mt12{margin-top:12px} .mt16{margin-top:16px}
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.badge::before{content:'●';font-size:7px}
+.badge-success{background:rgba(0,229,160,.1);color:var(--success);border:1px solid rgba(0,229,160,.2)}
+.badge-success::before{color:var(--success)}
+.badge-danger{background:rgba(255,61,90,.1);color:var(--danger);border:1px solid rgba(255,61,90,.2)}
+.badge-danger::before{color:var(--danger)}
+.badge-warning{background:rgba(255,176,32,.1);color:var(--warning);border:1px solid rgba(255,176,32,.2)}
+.badge-warning::before{color:var(--warning)}
+.badge-info{background:rgba(0,212,255,.1);color:var(--neon);border:1px solid rgba(0,212,255,.2)}
+.badge-info::before{color:var(--neon)}
+.badge-orange{background:rgba(255,107,53,.1);color:var(--orange);border:1px solid rgba(255,107,53,.2)}
+.badge-orange::before{color:var(--orange)}
+.badge-muted{background:rgba(90,138,170,.1);color:var(--text-400);border:1px solid rgba(90,138,170,.15)}
+.badge-muted::before{color:var(--text-400)}
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:8px 10px;text-align:left;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:var(--text-600);border-bottom:1px solid rgba(0,180,255,.08);white-space:nowrap}
+.tbl td{padding:10px 10px;border-bottom:1px solid rgba(0,180,255,.04);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(0,180,255,.03)}
+.tbl-wrap{overflow-x:auto}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Outfit',sans-serif;transition:all .18s}
+.btn-primary{background:linear-gradient(135deg,#0099dd,#0066aa);color:#fff;box-shadow:0 0 12px rgba(0,150,220,.2)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 20px rgba(0,180,255,.35)}
+.btn-ghost{background:var(--glass-bg2);border:1px solid var(--glass-border);color:var(--text-200)}
+.btn-ghost:hover{background:rgba(0,180,255,.1);color:var(--neon)}
+.btn-danger{background:rgba(255,61,90,.12);border:1px solid rgba(255,61,90,.25);color:var(--danger)}
+.btn-danger:hover{background:rgba(255,61,90,.2)}
+.btn-success{background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.22);color:var(--success)}
+.btn-orange{background:rgba(255,107,53,.12);border:1px solid rgba(255,107,53,.25);color:var(--orange)}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:7px}
+.btn-xs{padding:3px 7px;font-size:10px;border-radius:6px}
+/* Tabs */
+.tabs{display:flex;gap:2px;padding:3px;background:rgba(0,0,0,.3);border-radius:10px;width:fit-content}
+.tab{padding:5px 13px;border-radius:7px;font-size:11px;font-weight:500;color:var(--text-400);cursor:pointer;transition:all .18s;white-space:nowrap}
+.tab.active{background:var(--glass-bg2);color:var(--neon);border:1px solid rgba(0,212,255,.18)}
+/* Alert */
+.alert{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:var(--radius-sm);margin-bottom:7px;font-size:12px}
+.alert i{font-size:14px;flex-shrink:0;margin-top:1px}
+.alert-danger{background:rgba(255,61,90,.08);border:1px solid rgba(255,61,90,.2);color:#ff6688}
+.alert-warning{background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.2);color:var(--warning)}
+.alert-info{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.18);color:var(--neon)}
+.alert-success{background:rgba(0,229,160,.07);border:1px solid rgba(0,229,160,.18);color:var(--success)}
+/* Progress */
+.prog{height:5px;background:rgba(0,180,255,.1);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .8s}
+.pf-blue{background:linear-gradient(90deg,var(--neon),#0088ee)}
+.pf-green{background:linear-gradient(90deg,var(--success),#00ff88)}
+.pf-orange{background:linear-gradient(90deg,var(--orange),var(--orange2))}
+.pf-red{background:linear-gradient(90deg,var(--danger),#ff8888)}
+.pf-yellow{background:linear-gradient(90deg,var(--warning),#ffe066)}
+/* Timeline */
+.tl-wrap{padding-left:16px;position:relative}
+.tl-wrap::before{content:'';position:absolute;left:4px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--neon),transparent)}
+.tl-item{position:relative;margin-bottom:12px}
+.tl-dot{position:absolute;left:-15px;top:4px;width:6px;height:6px;border-radius:50%;background:var(--neon);box-shadow:0 0 6px var(--neon)}
+.tl-time{font-size:9px;color:var(--text-600);font-family:'IBM Plex Mono',monospace;margin-bottom:1px}
+.tl-text{font-size:11.5px;color:var(--text-200)}
+.tl-ship{font-size:10px;color:var(--neon);margin-top:1px}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;z-index:300;background:rgba(0,5,15,.75);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:rgba(6,18,40,.97);border:1px solid rgba(0,212,255,.18);border-radius:18px;padding:22px 24px;
+  width:500px;max-width:95vw;max-height:88vh;overflow-y:auto;position:relative;box-shadow:0 0 60px rgba(0,80,160,.3)}
+.modal-lg{width:680px}
+.modal::before{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent)}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal-title i{color:var(--neon)}
+.modal-close{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:7px;
+  background:rgba(0,0,0,.3);border:1px solid var(--glass-border2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text-400);font-size:12px;transition:all .2s}
+.modal-close:hover{background:rgba(255,61,90,.2);color:var(--danger)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:12px;border-top:1px solid var(--glass-border2)}
+/* Form */
+.fg{margin-bottom:11px}
+.fl{display:block;font-size:10px;font-weight:700;color:var(--text-400);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px}
+.fi,.fs,.fta{width:100%;padding:8px 11px;background:rgba(0,0,0,.35);border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);color:var(--text-100);font-family:'Outfit',sans-serif;font-size:12.5px;outline:none;transition:all .18s}
+.fi:focus,.fs:focus,.fta:focus{border-color:rgba(0,212,255,.4);background:rgba(0,20,50,.45)}
+.fi::placeholder,.fta::placeholder{color:var(--text-600)}
+.fs option{background:#071630}
+.fta{resize:vertical;min-height:72px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* Kanban */
+.kanban{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+.kc{min-width:195px;flex-shrink:0}
+.kc-head{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-400);
+  padding:5px 2px 9px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--glass-border2);margin-bottom:8px}
+.kcard{background:var(--glass-bg);border:1px solid var(--glass-border2);border-radius:9px;padding:10px 11px;
+  margin-bottom:6px;cursor:pointer;transition:all .18s}
+.kcard:hover{border-color:rgba(0,212,255,.3);transform:translateY(-1px)}
+.kcard .kn{font-size:12px;font-weight:600;margin-bottom:2px}
+.kcard .kr{font-size:10px;color:var(--neon)}
+.kcard .ks{font-size:10px;color:var(--text-400);margin-top:4px}
+.kcard .kd{font-size:9px;color:var(--text-600);margin-top:3px;font-family:'IBM Plex Mono',monospace}
+/* Vessel card */
+.vc{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius);padding:15px;
+  transition:all .22s;cursor:pointer;position:relative;overflow:hidden}
+.vc:hover{border-color:rgba(0,212,255,.3);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,40,100,.4)}
+.vc.op::before,.vc.rt::before,.vc.dk::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.vc.op::before{background:linear-gradient(90deg,var(--success),var(--neon2))}
+.vc.rt::before{background:linear-gradient(90deg,var(--neon),#0088ff)}
+.vc.dk::before{background:linear-gradient(90deg,var(--warning),var(--orange))}
+.vc .vn{font-size:13px;font-weight:800;margin-bottom:2px}
+.vc .vt{font-size:9.5px;color:var(--text-400);letter-spacing:.5px;margin-bottom:9px}
+.vc .vstats{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:9px;font-size:10px;color:var(--text-400)}
+.vc .vstats span{display:block;font-size:12.5px;font-weight:700;color:var(--text-100);font-family:'IBM Plex Mono',monospace}
+.vc .vloc{font-size:10px;color:var(--text-400);display:flex;align-items:center;gap:4px;margin-top:6px}
+/* Crew avatar */
+.cav-row{display:flex;align-items:center;gap:9px}
+.cav{width:32px;height:32px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.cinfo .c1{font-size:12.5px;font-weight:600}
+.cinfo .c2{font-size:10px;color:var(--neon)}
+/* MLC Grid */
+.mlcg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.mlcc{aspect-ratio:1;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;cursor:pointer;transition:all .15s}
+.mlcc:hover{transform:scale(1.3);z-index:1}
+.mlc-w{background:rgba(0,212,255,.28);color:var(--neon)}
+.mlc-r{background:rgba(0,229,160,.18);color:var(--success)}
+.mlc-v{background:rgba(255,61,90,.35);color:var(--danger)}
+/* Upload zone */
+.upzone{border:2px dashed var(--glass-border);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(0,0,0,.2)}
+.upzone:hover{border-color:rgba(0,212,255,.4);background:rgba(0,30,60,.3)}
+/* Toast */
+.toast-wrap{position:fixed;bottom:18px;right:18px;z-index:500;display:flex;flex-direction:column;gap:7px}
+.toast{background:rgba(6,18,40,.97);border:1px solid var(--glass-border);border-radius:9px;padding:11px 14px;
+  min-width:240px;max-width:340px;display:flex;align-items:center;gap:9px;font-size:12px;
+  box-shadow:0 8px 22px rgba(0,0,0,.4);backdrop-filter:blur(12px);
+  animation:tIn .3s ease,tOut .3s ease 3.7s forwards}
+.ts{border-left:3px solid var(--success)} .td{border-left:3px solid var(--danger)}
+.tw{border-left:3px solid var(--warning)} .ti{border-left:3px solid var(--neon)}
+@keyframes tIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes tOut{to{opacity:0;transform:translateX(20px)}}
+/* Notif panel */
+#notif-panel{position:fixed;top:var(--topbar-h);right:0;width:300px;background:rgba(4,15,34,.97);
+  border-left:1px solid var(--glass-border);backdrop-filter:blur(20px);height:calc(100vh - var(--topbar-h));
+  overflow-y:auto;z-index:150;transform:translateX(100%);transition:transform .3s ease;padding:14px}
+#notif-panel.open{transform:translateX(0)}
+/* Toggle switch */
+.tsw{position:relative;display:inline-block;width:34px;height:19px}
+.tsw input{opacity:0;width:0;height:0}
+.tsw span{position:absolute;inset:0;background:rgba(0,0,0,.4);border-radius:20px;cursor:pointer;transition:.2s;border:1px solid var(--glass-border)}
+.tsw span::before{content:'';position:absolute;width:13px;height:13px;background:var(--text-400);border-radius:50%;left:2px;top:2px;transition:.2s}
+.tsw input:checked+span{background:rgba(0,212,255,.2);border-color:rgba(0,212,255,.4)}
+.tsw input:checked+span::before{transform:translateX(15px);background:var(--neon);box-shadow:0 0 5px var(--neon)}
+/* Sep */
+.sep{height:1px;background:var(--glass-border2);margin:12px 0}
+/* Page anim */
+.page{display:none;animation:pgIn .25s ease}
+.page.active{display:block}
+@keyframes pgIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+/* Map */
+.map-box{background:rgba(0,5,20,.8);border:1px solid var(--glass-border);border-radius:var(--radius);overflow:hidden}
+.map-box iframe{width:100%;border:none;display:block}
+/* Colours */
+.text-neon{color:var(--neon)} .text-orange{color:var(--orange)} .text-success{color:var(--success)}
+.text-danger{color:var(--danger)} .text-warning{color:var(--warning)} .text-muted{color:var(--text-400)}
+/* Responsive */
+@media(max-width:1100px){:root{--sidebar-w:210px}.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){:root{--sidebar-w:60px}.brand-text,.uinfo,.nav-sec-lbl{display:none}
+  .ni{padding:9px;justify-content:center}.g3,.g4{grid-template-columns:1fr 1fr}
+  .g31,.g21,.g112{grid-template-columns:1fr}.tb-search{display:none}}
+@media(max-width:480px){.g2,.g3,.g4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">⚓</div>
+      <h1>PT. PELAYARAN LESTARI ABADI SERASI</h1>
+      <p>Fleet Monitoring System v1.0</p>
+    </div>
+    <div id="l-err" class="alert alert-danger" style="display:none;margin-bottom:12px;"><i class="fa fa-exclamation-triangle"></i><span>Email atau password salah. Silakan coba lagi.</span></div>
+    <div class="form-field"><label>Email</label><div class="field-wrap"><i class="fa fa-envelope fi"></i><input type="email" id="l-email" placeholder="email@lasshipping.co.id" value="ahmadmabrur.lasshipping@gmail.com"></div></div>
+    <div class="form-field"><label>Password</label><div class="field-wrap"><i class="fa fa-lock fi"></i><input type="password" id="l-pass" placeholder="••••••••" value="Adminoperation77" onkeydown="if(event.key==='Enter')doLogin()"></div></div>
+    <div class="login-roles mb16" id="role-chips">
+      <div class="role-chip active" onclick="selRole(this,'Admin')">Admin</div>
+      <div class="role-chip" onclick="selRole(this,'Crewing Manager')">Crewing Manager</div>
+      <div class="role-chip" onclick="selRole(this,'Operator')">Operator</div>
+    </div>
+    <button class="btn-login" onclick="doLogin()"><i class="fa fa-sign-in-alt"></i> Masuk ke Sistem</button>
+    <div class="login-hint">LAS Fleet Monitoring System &nbsp;|&nbsp; v1.0.0 &nbsp;|&nbsp; PT. LAS Shipping Lines</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="sb-head"><div class="brand">
+      <div class="brand-icon">⚓</div>
+      <div class="brand-text"><div class="b1">LAS FMS</div><div class="b2">Lestari Abadi Serasi</div></div>
+    </div></div>
+    <div class="sb-nav">
+      <div class="nav-sec-lbl">Utama</div>
+      <div class="ni active" data-page="dashboard" onclick="navTo('dashboard')"><span class="icon"><i class="fa fa-tachometer-alt"></i></span><span>Dashboard</span></div>
+      <div class="nav-sec-lbl">Armada</div>
+      <div class="ni" data-page="fleet" onclick="navTo('fleet')"><span class="icon"><i class="fa fa-ship"></i></span><span>Armada Kapal</span></div>
+      <div class="ni" data-page="operations" onclick="navTo('operations')"><span class="icon"><i class="fa fa-route"></i></span><span>Operasi Kapal</span></div>
+      <div class="nav-sec-lbl">SDM Kru</div>
+      <div class="ni" data-page="crew" onclick="navTo('crew')"><span class="icon"><i class="fa fa-users"></i></span><span>Manajemen Kru</span></div>
+      <div class="ni" data-page="rotation" onclick="navTo('rotation')"><span class="icon"><i class="fa fa-sync-alt"></i></span><span>Rotasi &amp; Jadwal</span></div>
+      <div class="ni" data-page="mlc" onclick="navTo('mlc')"><span class="icon"><i class="fa fa-clock"></i></span><span>Jam Kerja MLC</span><span class="nbadge" id="nb-mlc" style="display:none">0</span></div>
+      <div class="nav-sec-lbl">Kepatuhan</div>
+      <div class="ni" data-page="documents" onclick="navTo('documents')"><span class="icon"><i class="fa fa-file-alt"></i></span><span>Dokumen Kapal</span><span class="nbadge" id="nb-docs" style="display:none">0</span></div>
+      <div class="ni" data-page="compliance" onclick="navTo('compliance')"><span class="icon"><i class="fa fa-shield-alt"></i></span><span>Kepatuhan STCW</span></div>
+      <div class="ni" data-page="incidents" onclick="navTo('incidents')"><span class="icon"><i class="fa fa-exclamation-triangle"></i></span><span>Insiden</span></div>
+      <div class="nav-sec-lbl">Administrasi</div>
+      <div class="ni" data-page="reports" onclick="navTo('reports')"><span class="icon"><i class="fa fa-chart-bar"></i></span><span>Laporan &amp; Analitik</span></div>
+      <div class="ni" data-page="settings" onclick="navTo('settings')"><span class="icon"><i class="fa fa-cog"></i></span><span>Pengaturan</span></div>
+    </div>
+    <div class="sb-foot"><div class="user-pill">
+      <div class="uav" id="sb-av">AM</div>
+      <div class="uinfo"><div class="u1" id="sb-name">Ahmad Mabrur</div><div class="u2" id="sb-role">Admin</div></div>
+      <button class="logout-btn" onclick="doLogout()" title="Keluar"><i class="fa fa-sign-out-alt"></i></button>
+    </div></div>
+  </nav>
+
+  <!-- CONTENT -->
+  <div id="content-area">
+    <div id="topbar">
+      <div class="tb-info"><div class="t1" id="tb-title">Dashboard</div><div class="t2" id="tb-sub">Selamat datang 👋</div></div>
+      <div class="tb-search"><i class="fa fa-search" style="color:var(--text-400);font-size:11px;"></i><input type="text" placeholder="Cari kapal, kru, dokumen..." id="global-search" oninput="onSearch(this.value)"></div>
+      <div class="tb-icon" onclick="toggleNotif()" title="Notifikasi"><i class="fa fa-bell"></i><div class="dot" id="notif-dot" style="display:none;"></div></div>
+      <div class="tb-icon" id="lang-btn" onclick="toggleLang()" title="Bahasa"><i class="fa fa-globe"></i></div>
+      <div class="tb-profile" onclick="navTo('settings')">
+        <div class="tp-av" id="tb-av">AM</div>
+        <div><div style="font-size:12px;font-weight:600;" id="tb-name">Ahmad Mabrur</div><div style="font-size:10px;color:var(--text-400);" id="tb-role">Admin</div></div>
+      </div>
+    </div>
+
+    <div id="page-area">
+
+      <!-- ══════════ DASHBOARD ══════════ -->
+      <div id="page-dashboard" class="page active">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div><div style="font-size:19px;font-weight:800;">Dashboard Armada</div><div style="font-size:11px;color:var(--text-400);margin-top:2px;">PT. Pelayaran Lestari Abadi Serasi — Monitoring Real-Time</div></div>
+          <div style="display:flex;gap:8px;align-items:center;"><span class="mono" style="font-size:10px;color:var(--text-600);" id="dash-clock"></span><button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="fa fa-sync-alt"></i> Refresh</button></div>
+        </div>
+        <!-- KPI (reactive) -->
+        <div class="g g4 mb14">
+          <div class="sc"><div class="lbl">Total Kru Terdaftar</div><div class="val text-neon" id="kpi-crew">—</div><div class="sub up" id="kpi-crew-sub"><i class="fa fa-arrow-up"></i><span>Pool tenaga kerja</span></div><div class="ico">👥</div><div class="bar pf-blue"></div></div>
+          <div class="sc"><div class="lbl">Kapal Beroperasi</div><div class="val text-success" id="kpi-vessels">—</div><div class="sub" id="kpi-vessels-sub"></div><div class="ico">🚢</div><div class="bar pf-green"></div></div>
+          <div class="sc"><div class="lbl">Dokumen Kadaluarsa</div><div class="val" id="kpi-docs" style="color:var(--warning)">—</div><div class="sub warn"><i class="fa fa-exclamation-triangle"></i><span>Perlu perpanjangan</span></div><div class="ico">📋</div><div class="bar pf-yellow"></div></div>
+          <div class="sc"><div class="lbl">Pelanggaran MLC</div><div class="val text-danger" id="kpi-mlc">—</div><div class="sub down"><i class="fa fa-exclamation-circle"></i><span>Memerlukan tindakan</span></div><div class="ico">⏱</div><div class="bar pf-red"></div></div>
+        </div>
+        <!-- Fleet mini cards (reactive) -->
+        <div class="mb14"><div class="ct mb8"><i class="fa fa-ship text-neon"></i> Status Armada</div>
+          <div class="g g4" id="dash-fleet-cards"></div>
+        </div>
+        <!-- Mid row -->
+        <div class="g g112 mb14">
+          <div class="card"><div class="ct"><i class="fa fa-bell text-neon"></i> Peringatan Aktif</div><div id="dash-alerts"></div></div>
+          <div class="card"><div class="ct"><i class="fa fa-history text-neon"></i> Aktivitas Terbaru</div><div class="tl-wrap" id="dash-timeline"></div></div>
+          <div class="card">
+            <div class="ctop">
+              <div class="ct" style="margin:0;"><i class="fa fa-chart-line text-neon"></i> Performa Armada</div>
+              <div class="tabs"><div class="tab active" onclick="switchChart('kru',this)">Kru</div><div class="tab" onclick="switchChart('docs',this)">Dokumen</div><div class="tab" onclick="switchChart('ops',this)">Operasi</div></div>
+            </div>
+            <div style="height:175px;position:relative;"><canvas id="ch-main"></canvas></div>
+          </div>
+        </div>
+        <!-- Map + crew dist -->
+        <div class="g g21">
+          <div class="card" style="padding:0;overflow:hidden;">
+            <div style="padding:12px 16px 10px;border-bottom:1px solid var(--glass-border2);display:flex;align-items:center;justify-content:space-between;">
+              <div class="ct" style="margin:0;"><i class="fa fa-map-marked-alt text-neon"></i> Peta Posisi Armada (Live Tracking)</div>
+              <a href="http://2g.citrack.com/track/index.php" target="_blank" class="btn btn-ghost btn-sm"><i class="fa fa-external-link-alt"></i> Buka Penuh</a>
+            </div>
+            <div class="map-box" style="border:none;border-radius:0;"><iframe src="http://2g.citrack.com/track/index.php" height="230" loading="lazy"></iframe></div>
+          </div>
+          <div class="card">
+            <div class="ct"><i class="fa fa-chart-pie text-neon"></i> Distribusi Status Kru</div>
+            <div style="height:155px;position:relative;"><canvas id="ch-crew"></canvas></div>
+            <div class="sep"></div>
+            <div id="crew-dist-leg" style="display:flex;flex-wrap:wrap;gap:6px;font-size:10px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ FLEET ══════════ -->
+      <div id="page-fleet" class="page">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div><div style="font-size:19px;font-weight:800;">Armada Kapal</div><div style="font-size:11px;color:var(--text-400);margin-top:2px;" id="fleet-sub">4 Unit Kapal Terdaftar</div></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="tabs" id="fleet-filter-tabs">
+              <div class="tab active" onclick="setFleetFilter('all',this)">Semua</div>
+              <div class="tab" onclick="setFleetFilter('operational',this)">Operasional</div>
+              <div class="tab" onclick="setFleetFilter('route',this)">Berlayar</div>
+              <div class="tab" onclick="setFleetFilter('drydock',this)">Naik Dok</div>
+            </div>
+            <button class="btn btn-primary" onclick="openVesselModal()"><i class="fa fa-plus"></i> Tambah Kapal</button>
+          </div>
+        </div>
+        <div class="g g3 mb16" id="fleet-grid"></div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--glass-border2);display:flex;align-items:center;justify-content:space-between;">
+            <div class="ct" style="margin:0;"><i class="fa fa-map text-neon"></i> Tracking Posisi Real-Time — Semua Kapal</div>
+            <a href="http://2g.citrack.com/track/index.php" target="_blank" class="btn btn-ghost btn-sm"><i class="fa fa-external-link-alt"></i> Buka Tracking</a>
+          </div>
+          <iframe src="http://2g.citrack.com/track/index.php" height="300" style="width:100%;border:none;display:block;" loading="lazy"></iframe>
+        </div>
+      </div>
+
+      <!-- ══════════ CREW ══════════ -->
+      <div id="page-crew" class="page">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div><div style="font-size:19px;font-weight:800;">Manajemen Kru</div><div style="font-size:11px;color:var(--text-400);margin-top:2px;" id="crew-page-sub">Data &amp; Sertifikasi Awak Kapal</div></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="tabs" id="crew-filter-tabs">
+              <div class="tab active" onclick="setCrewFilter('all',this)">Semua</div>
+              <div class="tab" onclick="setCrewFilter('onboard',this)">Di Kapal</div>
+              <div class="tab" onclick="setCrewFilter('leave',this)">Cuti</div>
+              <div class="tab" onclick="setCrewFilter('standby',this)">Standby</div>
+              <div class="tab" onclick="setCrewFilter('medical',this)">Medis</div>
+            </div>
+            <button class="btn btn-primary" onclick="openCrewModal()"><i class="fa fa-user-plus"></i> Tambah Kru</button>
+          </div>
+        </div>
+        <div class="g g4 mb14">
+          <div class="sc"><div class="lbl">Di Kapal</div><div class="val text-success" id="cs-onboard">—</div></div>
+          <div class="sc"><div class="lbl">Cuti</div><div class="val text-neon" id="cs-leave">—</div></div>
+          <div class="sc"><div class="lbl">Standby</div><div class="val text-orange" id="cs-standby">—</div></div>
+          <div class="sc"><div class="lbl">Cuti Medis</div><div class="val text-danger" id="cs-medical">—</div></div>
+        </div>
+        <div class="card">
+          <div class="ctop">
+            <div class="ct" style="margin:0;"><i class="fa fa-users text-neon"></i> Daftar Kru</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="tb-search" style="width:220px;"><i class="fa fa-search" style="color:var(--text-400);font-size:11px;"></i><input type="text" placeholder="Cari nama / jabatan..." id="crew-search-inp" oninput="onCrewSearch(this.value)" style="width:170px;"></div>
+              <select class="fs" id="crew-vessel-filter" onchange="renderCrewTable()" style="width:160px;padding:6px 10px;font-size:11px;"><option value="">Semua Kapal</option></select>
+            </div>
+          </div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nama Kru</th><th>Jabatan</th><th>Kapal</th><th>Kebangsaan</th><th>Status</th><th>COC Kadaluarsa</th><th>Medis Kadaluarsa</th><th>Aksi</th></tr></thead><tbody id="crew-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- ══════════ ROTATION ══════════ -->
+      <div id="page-rotation" class="page">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div><div style="font-size:19px;font-weight:800;">Rotasi &amp; Penjadwalan Kru</div><div style="font-size:11px;color:var(--text-400);margin-top:2px;">Papan Kanban Sign-ON / Sign-OFF</div></div>
+          <button class="btn btn-primary" onclick="openRotationModal()"><i class="fa fa-plus"></i> Jadwalkan Rotasi</button>
+        </div>
+        <!-- Gap analysis alerts (reactive) -->
+        <div id="gap-alerts" class="mb14"></div>
+        <!-- Kanban -->
+        <div class="card mb14">
+          <div class="ct"><i class="fa fa-columns text-neon"></i> Papan Kanban Rotasi Awak Kapal</div>
+          <div class="kanban" id="kanban-board"></div>
+        </div>
+        <!-- Rotation table -->
+        <div class="card">
+          <div class="ctop">
+            <div class="ct" style="margin:0;"><i class="fa fa-calendar-alt text-neon"></i> Jadwal Rotasi</div>
+            <select class="fs" id="rot-filter-vessel" onchange="renderRotationTable()" style="width:180px;padding:5px 9px;font-size:11px;"><option value="">Semua Kapal</option></select>
+          </div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nama Kru</th><th>Jabatan</th><th>Kapal</th><th>Pelabuhan Join</th><th>Rencana Sign-ON</th><th>Rencana Sign-OFF</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="rot-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- ══════════ MLC ══════════ -->
+      <div id="page-mlc" class="page">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div><div style="font-size:19px;font-weight:800;">Jam Kerja MLC 2006</div><div style="font-size:11px;color:var(--text-400);margin-top:2px;">STCW Chapter VIII — Monitoring Jam Kerja &amp; Istirahat Bergulir</div></div>
+          <button class="btn btn-primary" onclick="openMlcModal()"><i class="fa fa-plus"></i> Input Jam Kerja</button>
+        </div>
+        <div class="alert alert-info mb14"><i class="fa fa-info-circle"></i><div><b>MLC 2006:</b> Istirahat minimal <b>10 jam / 24 jam bergulir</b> dan <b>77 jam / 7 hari bergulir</b>. Dibagi maks. 2 periode; salah satunya minimal <b>6 jam tidak terputus</b>. Interval kerja maks. <b>14 jam</b>.</div></div>
+        <div class="g g4 mb14">
+          <div class="sc"><div class="lbl">Pelanggaran Aktif</div><div class="val text-danger" id="mlc-viol">0</div></div>
+          <div class="sc"><div class="lbl">Kru Berisiko</div><div class="val text-warning" id="mlc-risk">0</div></div>
+          <div class="sc"><div class="lbl">Kru Dipantau</div><div class="val text-neon" id="mlc-mon">0</div></div>
+          <div class="sc"><div class="lbl">Kepatuhan MLC</div><div class="val text-success" id="mlc-pct">—</div></div>
+        </div>
+        <div class="g g21">
+          <div class="card">
+            <div class="ctop">
+              <div class="ct" style="margin:0;"><i class="fa fa-table text-neon"></i> Log Jam Kerja</div>
+              <select class="fs" id="mlc-filter-vessel" onchange="renderMlcTable()" style="width:180px;padding:5px 9px;font-size:11px;"><option value="">Semua Kapal</option></select>
+            </div>
+            <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Kru</th><th>Jabatan</th><th>Kapal</th><th>Tanggal</th><th>Jam Kerja</th><th>Jam Istirahat</th><th>Status MLC</th><th>Aksi</th></tr></thead><tbody id="mlc-tbody"></tbody></table></div>
+          </div>
+          <div class="card">
+            <div class="ct"><i class="fa fa-th text-neon"></i> Grid Visual 7 Hari</div>
+            <div style="display:flex;gap:3px;margin-bottom:7px;font-size:9px;color:var(--text-600);">
+              <span style="width:26px;text-align:center;">Sen</span><span style="width:26px;text-align:center;">Sel</span><span style="width:26px;text-align:center;">Rab</span>
+              <span style="width:26px;text-align:center;">Kam</span><span style="width:26px;text-align:center;">Jum</span><span style="width:26px;text-align:center;">Sab</span><span style="width:26px;text-align:center;">Min</span>
+            </div>
+            <div class="mlcg" id="mlc-grid"></div>
+            <div style="display:flex;gap:10px;font-size:10px;margin-top:10px;">
+              <span style="color:var(--neon)">■ Kerja</span><span style="color:var(--success)">■ Istirahat</span><span style="color:var(--danger)">■ Pelanggaran</span>
+            </div>
+            <div class="sep"></div>
+            <div id="mlc-grid-legend" style="font-size:10px;color:var(--text-400);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ DOCUMENTS ══════════ -->
+      <div id="page-documents" class="page">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div><div style="font-size:19px;font-weight:800;">Dokumen Kapal</div><div style="font-size:11px;color:var(--text-400);margin-top:2px;">Monitoring Sertifikat &amp; Izin Resmi Armada</div></div>
+          <div style="display:flex;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="toast('i','Export sedang diproses...')"><i class="fa fa-download"></i> Export</button><button class="btn btn-primary" onclick="openDocModal()"><i class="fa fa-upload"></i> Upload Dokumen</button></div>
+        </div>
+        <div id="doc-urgent-alerts" class="mb14"></div>
+        <div class="g g4 mb14">
+          <div class="sc"><div class="lbl">Total Dokumen</div><div class="val text-neon" id="doc-total">—</div></div>
+          <div class="sc"><div class="lbl">Valid</div><div class="val text-success" id="doc-valid">—</div></div>
+          <div class="sc"><div class="lbl">Kadaluarsa &lt;60 Hari</div><div class="val text-warning" id="doc-soon">—</div></div>
+          <div class="sc"><div class="lbl">Sudah Kadaluarsa</div><div class="val text-danger" id="doc-expired">—</div></div>
+        </div>
+        <div class="card">
+          <div class="ctop">
+            <div class="ct" style="margin:0;"><i class="fa fa-file-alt text-neon"></i> Daftar Dokumen</div>
+            <div style="display:flex;gap:8px;">
+              <select class="fs" id="doc-v-filter" onchange="renderDocsTable()" style="width:175px;padding:5px 9px;font-size:11px;"><option value="">Semua Kapal</option></select>
+              <select class="fs" id="doc-t-filter" onchange="renderDocsTable()" style="width:140px;padding:5px 9px;font-size:11px;"><option value="">Semua Jenis</option><option>ISM</option><option>ISPS</option><option>Registrasi</option><option>Kelas BKI</option><option>MARPOL</option><option>Load Line</option><option>Safety Equipment</option><option>Lainnya</option></select>
+            </div>
+          </div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nama Dokumen</th><th>Kapal</th><th>Jenis</th><th>Penerbit</th><th>Tanggal Terbit</th><th>Kadaluarsa</th><th>Sisa Hari</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="doc-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- ══════════ OPERATIONS ══════════ -->
+      <div id="page-operations" class="page">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div><div style="font-size:19px;font-weight:800;">Operasi Kapal</div><div style="font-size:11px;color:var(--text-400);margin-top:2px;">Voyage Tracking, Drydock &amp; Log Operasional</div></div>
+          <button class="btn btn-primary" onclick="openVoyageModal()"><i class="fa fa-plus"></i> Input Voyage</button>
+        </div>
+        <div class="g g4 mb14">
+          <div class="sc"><div class="lbl">Sedang Berlayar</div><div class="val text-success" id="op-sailing">—</div></div>
+          <div class="sc"><div class="lbl">Di Pelabuhan</div><div class="val text-neon" id="op-port">—</div></div>
+          <div class="sc"><div class="lbl">Naik Dok</div><div class="val text-warning" id="op-dock">—</div></div>
+          <div class="sc"><div class="lbl">Voyage Aktif</div><div class="val text-neon" id="op-voy">—</div></div>
+        </div>
+        <div class="g g21 mb14">
+          <div class="card"><div class="ct"><i class="fa fa-ship text-neon"></i> Status Operasional Kapal</div><div id="ops-list"></div></div>
+          <div>
+            <div class="card mb12" style="padding:0;overflow:hidden;">
+              <div style="padding:11px 14px;border-bottom:1px solid var(--glass-border2);display:flex;align-items:center;justify-content:space-between;">
+                <div class="ct" style="margin:0;font-size:11px;"><i class="fa fa-map text-neon"></i> Live Tracking</div>
+                <a href="http://2g.citrack.com/track/index.php" target="_blank" class="btn btn-ghost btn-sm" style="font-size:10px;padding:4px 8px;"><i class="fa fa-external-link-alt"></i></a>
+              </div>
+              <iframe src="http://2g.citrack.com/track/index.php" height="200" style="width:100%;border:none;display:block;" loading="lazy"></iframe>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct"><i class="fa fa-history text-neon"></i> Log Voyage</div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>No. Voyage</th><th>Kapal</th><th>Rute</th><th>Muatan</th><th>Berangkat</th><th>ETA</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="voy-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- ══════════ INCIDENTS ══════════ -->
+      <div id="page-incidents" class="page">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div><div style="font-size:19px;font-weight:800;">Manajemen Insiden</div><div style="font-size:11px;color:var(--text-400);margin-top:2px;">Laporan Keselamatan, Near-Miss &amp; Investigasi</div></div>
+          <button class="btn btn-primary" onclick="openIncidentModal()"><i class="fa fa-plus"></i> Laporkan Insiden</button>
+        </div>
+        <div class="g g4 mb14">
+          <div class="sc"><div class="lbl">Total Insiden</div><div class="val" id="inc-total">—</div></div>
+          <div class="sc"><div class="lbl">Bulan Ini</div><div class="val text-danger" id="inc-month">—</div></div>
+          <div class="sc"><div class="lbl">Dalam Investigasi</div><div class="val text-warning" id="inc-invest">—</div></div>
+          <div class="sc"><div class="lbl">Zero Accident Days</div><div class="val text-success" id="inc-zero">—</div></div>
+        </div>
+        <div class="card">
+          <div class="ct"><i class="fa fa-list text-neon"></i> Log Insiden</div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Tanggal</th><th>Kapal</th><th>Jenis</th><th>Deskripsi</th><th>Tindakan Awal</th><th>Tingkat</th><th>Status</th><th>Penanggung Jawab</th><th>Aksi</th></tr></thead><tbody id="inc-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- ══════════ COMPLIANCE ══════════ -->
+      <div id="page-compliance" class="page">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div><div style="font-size:19px;font-weight:800;">Kepatuhan STCW &amp; OCIMF</div><div style="font-size:11px;color:var(--text-400);margin-top:2px;">Validasi Kompetensi, Matriks Perwira &amp; Skor Kepatuhan</div></div>
+          <button class="btn btn-ghost btn-sm"><i class="fa fa-download"></i> Laporan Audit</button>
+        </div>
+        <div class="g g4 mb14">
+          <div class="sc"><div class="lbl">Kepatuhan STCW</div><div class="val text-success" id="comp-pct">—</div></div>
+          <div class="sc"><div class="lbl">COC Valid</div><div class="val text-neon" id="comp-valid">—</div></div>
+          <div class="sc"><div class="lbl">COC Segera Habis</div><div class="val text-warning" id="comp-soon">—</div></div>
+          <div class="sc"><div class="lbl">COC Kadaluarsa</div><div class="val text-danger" id="comp-exp">—</div></div>
+        </div>
+        <div class="g g21">
+          <div class="card">
+            <div class="ct"><i class="fa fa-certificate text-neon"></i> Matriks Sertifikasi STCW per Jabatan</div>
+            <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Jabatan</th><th>Reg. STCW</th><th>CoC</th><th>BST</th><th>GMDSS</th><th>ECDIS</th><th>Medis</th><th>Skor</th></tr></thead><tbody id="comp-tbody"></tbody></table></div>
+          </div>
+          <div class="card">
+            <div class="ct"><i class="fa fa-chart-bar text-neon"></i> Skor Kepatuhan per Kapal</div>
+            <div style="height:210px;position:relative;"><canvas id="ch-comp"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ REPORTS ══════════ -->
+      <div id="page-reports" class="page">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div><div style="font-size:19px;font-weight:800;">Laporan &amp; Analitik</div><div style="font-size:11px;color:var(--text-400);margin-top:2px;">Business Intelligence Armada PT. LAS Shipping Lines</div></div>
+          <div style="display:flex;gap:8px;"><button class="btn btn-ghost" onclick="toast('i','Export PDF sedang diproses...')"><i class="fa fa-file-pdf"></i> PDF</button><button class="btn btn-primary" onclick="toast('i','Export Excel sedang diproses...')"><i class="fa fa-file-excel"></i> Excel</button></div>
+        </div>
+        <div class="g g4 mb14">
+          <div class="sc"><div class="lbl">Efisiensi Armada</div><div class="val text-success" id="rep-eff">—</div></div>
+          <div class="sc"><div class="lbl">Utilisasi Kru</div><div class="val text-neon" id="rep-util">—</div></div>
+          <div class="sc"><div class="lbl">On-Time Rotasi</div><div class="val text-success" id="rep-ontime">—</div></div>
+          <div class="sc"><div class="lbl">Total Voyage YTD</div><div class="val text-neon" id="rep-voyage">—</div></div>
+        </div>
+        <div class="g g2 mb14">
+          <div class="card"><div class="ct"><i class="fa fa-chart-bar text-neon"></i> Rotasi Kru — 12 Bulan Terakhir</div><div style="height:185px;position:relative;"><canvas id="ch-rot"></canvas></div></div>
+          <div class="card"><div class="ct"><i class="fa fa-chart-pie text-neon"></i> Distribusi Jabatan Kru</div><div style="height:185px;position:relative;"><canvas id="ch-rank"></canvas></div></div>
+        </div>
+        <div class="g g21">
+          <div class="card"><div class="ct"><i class="fa fa-chart-area text-neon"></i> Tren Kepatuhan Dokumen</div><div style="height:170px;position:relative;"><canvas id="ch-doc-trend"></canvas></div></div>
+          <div class="card"><div class="ct"><i class="fa fa-table text-neon"></i> Ringkasan Armada</div><div id="rep-summary"></div></div>
+        </div>
+      </div>
+
+      <!-- ══════════ SETTINGS ══════════ -->
+      <div id="page-settings" class="page">
+        <div style="font-size:19px;font-weight:800;margin-bottom:4px;">Pengaturan Sistem</div>
+        <div style="font-size:11px;color:var(--text-400);margin-bottom:16px;">Konfigurasi Perusahaan, Pengguna &amp; Notifikasi</div>
+        <div class="g g21">
+          <div>
+            <div class="card mb12">
+              <div class="ct"><i class="fa fa-building text-neon"></i> Profil Perusahaan</div>
+              <div class="frow"><div class="fg"><label class="fl">Nama Perusahaan</label><input class="fi" id="set-company" value="PT. Pelayaran Lestari Abadi Serasi"></div><div class="fg"><label class="fl">Email PIC</label><input class="fi" id="set-email" value="ahmadmabrur.lasshipping@gmail.com"></div></div>
+              <div class="frow"><div class="fg"><label class="fl">Penanggung Jawab</label><input class="fi" id="set-pic" value="Ahmad Mabrur"></div><div class="fg"><label class="fl">Telepon</label><input class="fi" id="set-phone" value="021-45850929"></div></div>
+              <div class="fg"><label class="fl">Alamat</label><textarea class="fta" rows="2">Rukan Artha Gading Niaga H18, Kelapa Gading Barat, Jakarta Utara 14240</textarea></div>
+              <div class="fg"><label class="fl">Website</label><input class="fi" value="www.lasshipping.co.id"></div>
+              <button class="btn btn-primary" onclick="saveSettings()"><i class="fa fa-save"></i> Simpan Pengaturan</button>
+            </div>
+            <div class="card">
+              <div class="ct"><i class="fa fa-users-cog text-neon"></i> Pengguna &amp; Role</div>
+              <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+                <tr><td>Ahmad Mabrur</td><td class="mono" style="font-size:10px;">ahmadmabrur.lasshipping@gmail.com</td><td><span class="badge badge-info">Admin</span></td><td><span class="badge badge-success">Aktif</span></td><td><button class="btn btn-ghost btn-xs">Edit</button></td></tr>
+                <tr><td>Rudi Hartono</td><td class="mono" style="font-size:10px;">rudi@lasshipping.co.id</td><td><span class="badge badge-orange">Crewing Manager</span></td><td><span class="badge badge-success">Aktif</span></td><td><button class="btn btn-ghost btn-xs">Edit</button></td></tr>
+                <tr><td>Dewi Sartika</td><td class="mono" style="font-size:10px;">dewi@lasshipping.co.id</td><td><span class="badge badge-muted">Operator</span></td><td><span class="badge badge-success">Aktif</span></td><td><button class="btn btn-ghost btn-xs">Edit</button></td></tr>
+              </tbody></table></div>
+              <button class="btn btn-ghost btn-sm mt8"><i class="fa fa-user-plus"></i> Tambah Pengguna</button>
+            </div>
+          </div>
+          <div>
+            <div class="card mb12">
+              <div class="ct"><i class="fa fa-bell text-neon"></i> Notifikasi Email</div>
+              <div style="font-size:12px;display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>Sertifikat kadaluarsa &lt;60 hari</span><label class="tsw"><input type="checkbox" checked><span></span></label></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>Pelanggaran MLC</span><label class="tsw"><input type="checkbox" checked><span></span></label></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>Rotasi mendatang</span><label class="tsw"><input type="checkbox" checked><span></span></label></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>Laporan insiden baru</span><label class="tsw"><input type="checkbox" checked><span></span></label></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><span>Laporan harian nakhoda</span><label class="tsw"><input type="checkbox"><span></span></label></div>
+              </div>
+              <div class="sep"></div>
+              <div class="fg"><label class="fl">Penerima Email Alert</label><input class="fi" value="ahmadmabrur.lasshipping@gmail.com"></div>
+            </div>
+            <div class="card mb12">
+              <div class="ct"><i class="fa fa-map-marker-alt text-neon"></i> Kantor Cabang</div>
+              <div style="font-size:11px;color:var(--text-400);line-height:2.0;">
+                <div><b class="text-neon">Surabaya</b> — Puskopal Armatim Lt.2, Jl. Ikan Dorang No.1 · (031) 3536068</div>
+                <div><b class="text-neon">Balikpapan</b> — Jl. MT Haryono Blok D6/10 · (0542) 875490</div>
+                <div><b class="text-neon">Makassar</b> — Komplek Bumi Tirta Paotere Blok A No.4 · (0411) 8945038</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ct"><i class="fa fa-info-circle text-neon"></i> Tentang Sistem</div>
+              <div style="font-size:12px;color:var(--text-400);line-height:1.9;">
+                <div><b class="text-neon">LAS Fleet Monitoring System</b> v1.0.0</div>
+                <div>PT. Pelayaran Lestari Abadi Serasi</div>
+                <div>ISO 9001 · ISO 14001 · ISO 45001 · Member IMO</div>
+                <div class="mono" style="font-size:10px;margin-top:5px;">© 2024 LAS Shipping Lines</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-area -->
+  </div><!-- /content-area -->
+</div><!-- /app -->
+
+<!-- NOTIFICATION PANEL -->
+<div id="notif-panel">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;">
+    <div style="font-weight:700;font-size:13px;">🔔 Notifikasi</div>
+    <button onclick="toggleNotif()" style="background:none;border:none;color:var(--text-400);cursor:pointer;font-size:12px;">✕</button>
+  </div>
+  <div id="notif-list"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- ══════════════════════════════
+     MODALS
+══════════════════════════════ -->
+<!-- Vessel Modal -->
+<div class="modal-overlay" id="m-vessel"><div class="modal modal-lg">
+  <div class="modal-close" onclick="closeModal('m-vessel')">✕</div>
+  <div class="modal-title"><i class="fa fa-ship"></i><span id="vessel-modal-ttl">Tambah Kapal Baru</span></div>
+  <input type="hidden" id="v-id">
+  <div class="frow"><div class="fg"><label class="fl">Nama Kapal</label><input class="fi" id="v-name" placeholder="LCT. ..."></div><div class="fg"><label class="fl">Jenis Kapal</label><select class="fs" id="v-type"><option>LCT</option><option>Tanker</option><option>Bulk Carrier</option><option>Container</option><option>RoRo</option><option>Tug Boat</option></select></div></div>
+  <div class="frow"><div class="fg"><label class="fl">GT (Ton)</label><input class="fi" id="v-gt" type="number"></div><div class="fg"><label class="fl">DWT (Ton)</label><input class="fi" id="v-dwt" type="number"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">LOA (m)</label><input class="fi" id="v-loa" type="number" step="0.01"></div><div class="fg"><label class="fl">Lebar (m)</label><input class="fi" id="v-breadth" type="number" step="0.01"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Kedalaman (m)</label><input class="fi" id="v-depth" type="number" step="0.01"></div><div class="fg"><label class="fl">Draft (m)</label><input class="fi" id="v-draft" type="number" step="0.01"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Tahun Bangun</label><input class="fi" id="v-year" type="number" placeholder="2014"></div><div class="fg"><label class="fl">Kelas</label><input class="fi" id="v-class" placeholder="BKI"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Port of Registry</label><input class="fi" id="v-port" placeholder="Samarinda"></div><div class="fg"><label class="fl">Bendera</label><select class="fs" id="v-flag"><option>Indonesia</option><option>Panama</option><option>Marshall Islands</option></select></div></div>
+  <div class="fg"><label class="fl">Mesin Utama</label><input class="fi" id="v-engine" placeholder="2x Yanmar Marine Diesel 6AYM-WTE 500kW"></div>
+  <div class="frow"><div class="fg"><label class="fl">Status</label><select class="fs" id="v-status"><option value="operational">Operasional</option><option value="route">Berlayar</option><option value="drydock">Naik Dok</option></select></div><div class="fg"><label class="fl">Jumlah Kru Saat Ini</label><input class="fi" id="v-crew" type="number" value="13"></div></div>
+  <div class="fg"><label class="fl">Lokasi / Rute Saat Ini</label><input class="fi" id="v-location" placeholder="Contoh: Selat Makassar — Samarinda"></div>
+  <div class="fg"><label class="fl">Catatan Tambahan</label><textarea class="fta" id="v-notes" rows="2" placeholder="Peralatan, rampdoor, kapasitas, dll."></textarea></div>
+  <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-vessel')">Batal</button><button class="btn btn-primary" onclick="saveVessel()"><i class="fa fa-save"></i> Simpan Kapal</button></div>
+</div></div>
+
+<!-- Crew Modal -->
+<div class="modal-overlay" id="m-crew"><div class="modal modal-lg">
+  <div class="modal-close" onclick="closeModal('m-crew')">✕</div>
+  <div class="modal-title"><i class="fa fa-user-plus"></i><span id="crew-modal-ttl">Tambah Kru Baru</span></div>
+  <input type="hidden" id="cr-id">
+  <div class="frow"><div class="fg"><label class="fl">Nama Lengkap (Sesuai Paspor)</label><input class="fi" id="cr-name" placeholder="Nama lengkap..."></div><div class="fg"><label class="fl">Jabatan</label><select class="fs" id="cr-rank"><option>Nakhoda (Master)</option><option>Mualim I (Chief Officer)</option><option>Mualim II</option><option>Mualim III</option><option>KKM (Chief Engineer)</option><option>Masinis I</option><option>Masinis II</option><option>Masinis III</option><option>Bosun</option><option>AB Deck</option><option>Juru Mudi</option><option>Juru Masak</option><option>Kelasi</option><option>Kadet Deck</option><option>Kadet Mesin</option></select></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Kebangsaan</label><input class="fi" id="cr-nat" value="Indonesia"></div><div class="fg"><label class="fl">Tanggal Lahir</label><input class="fi" id="cr-dob" type="date"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Nomor Paspor</label><input class="fi" id="cr-pass" placeholder="A1234567"></div><div class="fg"><label class="fl">Nomor Buku Pelaut</label><input class="fi" id="cr-sb" placeholder="SB-XXXXX"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Kapal (Penugasan)</label><select class="fs" id="cr-vessel"><option value="">— Belum Ditugaskan —</option></select></div><div class="fg"><label class="fl">Status</label><select class="fs" id="cr-status"><option value="onboard">Di Kapal (Onboard)</option><option value="leave">Cuti</option><option value="standby">Standby</option><option value="medical">Cuti Medis</option></select></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Nomor COC / Sertifikat Kompetensi</label><input class="fi" id="cr-coc" placeholder="COC-XXXXX"></div><div class="fg"><label class="fl">Berlaku COC Hingga</label><input class="fi" id="cr-coc-exp" type="date"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Berlaku Medis Hingga</label><input class="fi" id="cr-med" type="date"></div><div class="fg"><label class="fl">GMDSS Kadaluarsa</label><input class="fi" id="cr-gmdss" type="date"></div></div>
+  <div class="fg"><label class="fl">Kontak Darurat (Nama — No. HP)</label><input class="fi" id="cr-emr" placeholder="Contoh: Siti Aminah — 0812-3456-7890"></div>
+  <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-crew')">Batal</button><button class="btn btn-primary" onclick="saveCrew()"><i class="fa fa-save"></i> Simpan Kru</button></div>
+</div></div>
+
+<!-- Rotation Modal -->
+<div class="modal-overlay" id="m-rotation"><div class="modal">
+  <div class="modal-close" onclick="closeModal('m-rotation')">✕</div>
+  <div class="modal-title"><i class="fa fa-sync-alt"></i><span id="rot-modal-ttl">Jadwalkan Rotasi Kru</span></div>
+  <input type="hidden" id="rot-id">
+  <div class="fg"><label class="fl">Pilih Kru</label><select class="fs" id="rot-crew"></select></div>
+  <div class="frow"><div class="fg"><label class="fl">Kapal Tujuan</label><select class="fs" id="rot-vessel"></select></div><div class="fg"><label class="fl">Jabatan yang Diemban</label><select class="fs" id="rot-rank"><option>Nakhoda</option><option>Mualim I</option><option>Mualim II</option><option>Mualim III</option><option>KKM</option><option>Masinis I</option><option>Masinis II</option><option>Masinis III</option><option>Bosun</option><option>AB Deck</option><option>Juru Mudi</option><option>Juru Masak</option><option>Kelasi</option></select></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Status Rotasi</label><select class="fs" id="rot-status"><option value="planned">Direncanakan</option><option value="enroute">Dalam Perjalanan (En Route)</option><option value="onboard">Di Kapal (Onboard)</option><option value="leave">Cuti</option></select></div><div class="fg"><label class="fl">Pelabuhan Join</label><input class="fi" id="rot-port" placeholder="Nama Pelabuhan"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Rencana Sign-ON</label><input class="fi" id="rot-on" type="date"></div><div class="fg"><label class="fl">Rencana Sign-OFF</label><input class="fi" id="rot-off" type="date"></div></div>
+  <div class="fg"><label class="fl">Catatan</label><textarea class="fta" id="rot-notes" rows="2" placeholder="Informasi tambahan rotasi..."></textarea></div>
+  <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-rotation')">Batal</button><button class="btn btn-primary" onclick="saveRotation()"><i class="fa fa-save"></i> Jadwalkan</button></div>
+</div></div>
+
+<!-- MLC Modal -->
+<div class="modal-overlay" id="m-mlc"><div class="modal">
+  <div class="modal-close" onclick="closeModal('m-mlc')">✕</div>
+  <div class="modal-title"><i class="fa fa-clock"></i> Input Jam Kerja Harian</div>
+  <div class="fg"><label class="fl">Pilih Kru</label><select class="fs" id="mlc-crew-sel"></select></div>
+  <div class="frow"><div class="fg"><label class="fl">Tanggal</label><input class="fi" id="mlc-date" type="date"></div><div class="fg"><label class="fl">Kapal</label><select class="fs" id="mlc-vessel-sel"></select></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Jam Kerja (jam)</label><input class="fi" id="mlc-hours" type="number" min="0" max="24" step="0.5" placeholder="8.0"></div><div class="fg"><label class="fl">Jam Istirahat (jam)</label><input class="fi" id="mlc-rest" type="number" min="0" max="24" step="0.5" placeholder="10.0"></div></div>
+  <div id="mlc-violation-warn" class="alert alert-danger" style="display:none;"><i class="fa fa-exclamation-triangle"></i><span>Pelanggaran MLC terdeteksi! Email peringatan akan dikirim.</span></div>
+  <div class="fg"><label class="fl">Catatan Kegiatan</label><textarea class="fta" id="mlc-notes" rows="2" placeholder="Jaga navigasi, lembur bongkar muat, dll."></textarea></div>
+  <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-mlc')">Batal</button><button class="btn btn-primary" onclick="saveMlc()"><i class="fa fa-save"></i> Simpan</button></div>
+</div></div>
+
+<!-- Doc Modal -->
+<div class="modal-overlay" id="m-doc"><div class="modal">
+  <div class="modal-close" onclick="closeModal('m-doc')">✕</div>
+  <div class="modal-title"><i class="fa fa-file-upload"></i><span id="doc-modal-ttl">Upload Dokumen</span></div>
+  <input type="hidden" id="doc-id">
+  <div class="fg"><label class="fl">Kapal</label><select class="fs" id="d-vessel"></select></div>
+  <div class="frow"><div class="fg"><label class="fl">Jenis Dokumen</label><select class="fs" id="d-type"><option>ISM</option><option>ISPS</option><option>Registrasi</option><option>Kelas BKI</option><option>Load Line</option><option>MARPOL</option><option>Safety Management</option><option>Safety Equipment</option><option>Radio</option><option>Lainnya</option></select></div><div class="fg"><label class="fl">Nama Dokumen</label><input class="fi" id="d-name" placeholder="Safety Management Certificate"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Tanggal Terbit</label><input class="fi" id="d-issue" type="date"></div><div class="fg"><label class="fl">Tanggal Kadaluarsa</label><input class="fi" id="d-expiry" type="date"></div></div>
+  <div class="fg"><label class="fl">Penerbit</label><input class="fi" id="d-issuer" placeholder="BKI / DJPL Kemenhub"></div>
+  <div class="fg"><label class="fl">Upload File (PDF/JPEG/PNG)</label>
+    <div class="upzone" onclick="toast('i','Fitur upload aktif setelah integrasi cloud storage')"><i class="fa fa-cloud-upload-alt" style="font-size:26px;color:var(--text-400);display:block;margin-bottom:6px;"></i><div style="font-size:11.5px;color:var(--text-400);">Klik atau drag &amp; drop file di sini</div><div style="font-size:10px;color:var(--text-600);margin-top:2px;">PDF, JPEG, PNG — maks. 10MB</div></div>
+  </div>
+  <div class="fg"><label class="fl">Catatan</label><textarea class="fta" id="d-notes" rows="2"></textarea></div>
+  <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-doc')">Batal</button><button class="btn btn-primary" onclick="saveDoc()"><i class="fa fa-save"></i> Simpan</button></div>
+</div></div>
+
+<!-- Incident Modal -->
+<div class="modal-overlay" id="m-incident"><div class="modal">
+  <div class="modal-close" onclick="closeModal('m-incident')">✕</div>
+  <div class="modal-title"><i class="fa fa-exclamation-triangle"></i> Laporkan Insiden / Near-Miss</div>
+  <div class="frow"><div class="fg"><label class="fl">Kapal</label><select class="fs" id="inc-vessel"></select></div><div class="fg"><label class="fl">Waktu Kejadian</label><input class="fi" id="inc-date" type="datetime-local"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Jenis Insiden</label><select class="fs" id="inc-type"><option>Near Miss</option><option>Kecelakaan Personel</option><option>Kebakaran</option><option>Tumpahan Minyak</option><option>Kerusakan Properti</option><option>Cuaca Ekstrem</option><option>Observasi Keselamatan</option></select></div><div class="fg"><label class="fl">Tingkat Keparahan</label><select class="fs" id="inc-sev"><option value="low">Rendah</option><option value="medium">Sedang</option><option value="high">Tinggi</option><option value="critical">Kritis</option></select></div></div>
+  <div class="fg"><label class="fl">Deskripsi Insiden</label><textarea class="fta" id="inc-desc" rows="3" placeholder="Kronologi kejadian secara detail..."></textarea></div>
+  <div class="fg"><label class="fl">Tindakan Penanganan Awal</label><textarea class="fta" id="inc-action" rows="2" placeholder="Langkah pertolongan pertama atau penanganan..."></textarea></div>
+  <div class="fg"><label class="fl">Upload Foto / Bukti</label><div class="upzone" onclick="toast('i','Upload aktif setelah integrasi storage')"><i class="fa fa-camera" style="font-size:24px;color:var(--text-400);display:block;margin-bottom:5px;"></i><div style="font-size:11px;color:var(--text-400);">Upload foto atau dokumen pendukung</div></div></div>
+  <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-incident')">Batal</button><button class="btn btn-danger" onclick="saveIncident()"><i class="fa fa-exclamation-triangle"></i> Laporkan Insiden</button></div>
+</div></div>
+
+<!-- Voyage Modal -->
+<div class="modal-overlay" id="m-voyage"><div class="modal">
+  <div class="modal-close" onclick="closeModal('m-voyage')">✕</div>
+  <div class="modal-title"><i class="fa fa-route"></i> Input Voyage Baru</div>
+  <div class="frow"><div class="fg"><label class="fl">Kapal</label><select class="fs" id="voy-vessel"></select></div><div class="fg"><label class="fl">Nomor Voyage</label><input class="fi" id="voy-no" placeholder="V2024-001"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Pelabuhan Asal</label><input class="fi" id="voy-from" placeholder="Samarinda"></div><div class="fg"><label class="fl">Pelabuhan Tujuan</label><input class="fi" id="voy-to" placeholder="Surabaya"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Jenis Muatan</label><input class="fi" id="voy-cargo" placeholder="Alat berat / Material"></div><div class="fg"><label class="fl">Jumlah Muatan</label><input class="fi" id="voy-qty" placeholder="1200 MT"></div></div>
+  <div class="frow"><div class="fg"><label class="fl">Waktu Berangkat</label><input class="fi" id="voy-start" type="datetime-local"></div><div class="fg"><label class="fl">Estimasi Tiba (ETA)</label><input class="fi" id="voy-eta" type="datetime-local"></div></div>
+  <div class="fg"><label class="fl">Status Voyage</label><select class="fs" id="voy-status"><option value="active">Sedang Berlayar</option><option value="port">Di Pelabuhan</option><option value="planned">Direncanakan</option><option value="completed">Selesai</option></select></div>
+  <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-voyage')">Batal</button><button class="btn btn-primary" onclick="saveVoyage()"><i class="fa fa-save"></i> Simpan Voyage</button></div>
+</div></div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="m-confirm"><div class="modal" style="max-width:360px;text-align:center;">
+  <div class="modal-title" style="justify-content:center;"><i class="fa fa-question-circle text-warning"></i> Konfirmasi</div>
+  <p id="confirm-msg" style="font-size:13px;color:var(--text-200);margin-bottom:18px;line-height:1.6;"></p>
+  <div style="display:flex;gap:8px;justify-content:center;">
+    <button class="btn btn-ghost" onclick="closeModal('m-confirm')">Batal</button>
+    <button class="btn btn-danger" id="confirm-ok">Ya, Lanjutkan</button>
+  </div>
+</div></div>
+
+<!-- ══════════════════════════════
+     JAVASCRIPT
+══════════════════════════════ -->
+<script>
+'use strict';
+// ═══════════════════════════════════════
+// EVENT BUS — reactive cross-page updates
+// ═══════════════════════════════════════
+const EB = {
+  _handlers: {},
+  on(ev, fn) { (this._handlers[ev] = this._handlers[ev]||[]).push(fn); },
+  emit(ev, data) { (this._handlers[ev]||[]).forEach(fn => { try{fn(data);}catch(e){console.warn(e);} }); }
+};
+// Data change events
+const EV = {
+  VESSEL_CHANGE: 'vessel:change',
+  CREW_CHANGE: 'crew:change',
+  DOC_CHANGE: 'doc:change',
+  MLC_CHANGE: 'mlc:change',
+  ROTATION_CHANGE: 'rotation:change',
+  INCIDENT_CHANGE: 'incident:change',
+  VOYAGE_CHANGE: 'voyage:change',
+};
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let CUR_PAGE = 'dashboard';
+let CUR_USER = null;
+let SEL_ROLE = 'Admin';
+let FLEET_FILTER = 'all';
+let CREW_FILTER = 'all';
+let CREW_SEARCH = '';
+let CHART_MAIN = null, CHART_CREW = null, CHART_COMP = null, CHART_ROT = null, CHART_RANK = null, CHART_DOC = null;
+
+// ═══════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════
+const CREDS = [
+  { email:'ahmadmabrur.lasshipping@gmail.com', pass:'Adminoperation77', name:'Ahmad Mabrur', role:'Admin', av:'AM' },
+  { email:'rudi@lasshipping.co.id', pass:'Rudi1234', name:'Rudi Hartono', role:'Crewing Manager', av:'RH' },
+  { email:'dewi@lasshipping.co.id', pass:'Dewi1234', name:'Dewi Sartika', role:'Operator', av:'DS' },
+];
+function selRole(el, role) {
+  document.querySelectorAll('.role-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); SEL_ROLE = role;
+}
+function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  const user = CREDS.find(u=>u.email===email && u.pass===pass);
+  const errEl = document.getElementById('l-err');
+  if (!user) { errEl.style.display='flex'; return; }
+  errEl.style.display='none';
+  CUR_USER = { ...user, role: SEL_ROLE || user.role };
+  localStorage.setItem('las_user', JSON.stringify(CUR_USER));
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app').style.display='flex';
+  setUserUI(); initApp();
+}
+function doLogout() {
+  localStorage.removeItem('las_user'); CUR_USER = null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-page').style.display='flex';
+}
+function setUserUI() {
+  const u = CUR_USER;
+  ['sb-av','tb-av'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=u.av;});
+  document.getElementById('sb-name').textContent = u.name;
+  document.getElementById('sb-role').textContent = u.role;
+  document.getElementById('tb-name').textContent = u.name;
+  document.getElementById('tb-role').textContent = u.role;
+}
+
+// ═══════════════════════════════════════
+// DATABASE (localStorage)
+// ═══════════════════════════════════════
+function defaultData() {
+  return {
+    vessels: [
+      {id:'v1',name:'LCT. DEWA SAMUDERA ABADI',type:'LCT',gt:707,dwt:1200,loa:59.61,breadth:12.20,depth:4.00,draft:3.00,year:2014,cls:'BKI',port:'Samarinda',flag:'Indonesia',engine:'2x Yanmar Marine Diesel 6AYM-WTE 500kW',status:'operational',crew:13,location:'Selat Makassar — Samarinda',notes:'Rampdoor: 9.00×7.50m | Aux: 1x Yuchai 53kW + YC2115C 40kW | Pump: 2x Ebara 65×50 FSJ'},
+      {id:'v2',name:'LCT. LAS 2',type:'LCT',gt:1085,dwt:2000,loa:78.12,breadth:13.50,depth:4.20,draft:3.15,year:2015,cls:'BKI',port:'Samarinda',flag:'Indonesia',engine:'2x Mitsubishi Diesel S6R2-MPTK2',status:'route',crew:13,location:'Laut Jawa — Menuju Surabaya',notes:'Rampdoor: 7.30×8.00m | Aux: 2x Mitsubishi S6R-60kVA | SSAS, AIS'},
+      {id:'v3',name:'LCT. RADJA SAMUDERA ABADI',type:'LCT',gt:719,dwt:1200,loa:59.85,breadth:12.20,depth:4.00,draft:3.00,year:2014,cls:'BKI',port:'Samarinda',flag:'Indonesia',engine:'2x Yanmar Marine Diesel 6HYM-WET X YX161L/500kW',status:'operational',crew:13,location:'Perairan Kalimantan Timur',notes:'Rampdoor: 9.00×7.50m | Aux: 2x Yuchai YC6105CA 53kW | Thuraya Tracking VHF Marine'},
+      {id:'v4',name:'CINTA SAMUDERA ABADI',type:'LCT',gt:1240,dwt:2400,loa:76.88,breadth:15.00,depth:4.50,draft:3.24,year:2021,cls:'BKI',port:'Samarinda',flag:'Indonesia',engine:'2x 829HP Yanmar 6AYM-WET | Kecepatan maks. 11 knot',status:'drydock',crew:8,location:'Galangan Kapal Samarinda',notes:'Kapasitas: 86 TEUS | Rampdoor: 10.00×9.00m | Aux: 2x Doosan AD136 85kVA | Pump: Ebara 65×50 FSJ'},
+    ],
+    crew: [
+      {id:'c1',name:'Capt. Budi Santoso',rank:'Nakhoda (Master)',vessel:'v1',nationality:'Indonesia',passport:'A1234567',seamanbook:'SB-001',dob:'1975-03-15',status:'onboard',coc:'COC-NKD-001',cocExp:'2025-12-31',medExp:'2025-06-30',gmdss:'2025-09-01',emergency:'Siti Fatimah — 0812-3456-7890'},
+      {id:'c2',name:'Rahman Hidayat',rank:'Mualim I (Chief Officer)',vessel:'v1',nationality:'Indonesia',passport:'A2345678',seamanbook:'SB-002',dob:'1980-07-22',status:'onboard',coc:'COC-MUA1-002',cocExp:'2026-03-31',medExp:'2025-08-15',gmdss:'2026-01-01',emergency:'Dewi Rahayu — 0813-4567-8901'},
+      {id:'c3',name:'Capt. Agus Setiawan',rank:'Nakhoda (Master)',vessel:'v2',nationality:'Indonesia',passport:'A3456789',seamanbook:'SB-003',dob:'1978-11-05',status:'onboard',coc:'COC-NKD-003',cocExp:'2025-04-30',medExp:'2025-07-01',gmdss:'2025-11-30',emergency:'Rina Susanti — 0814-5678-9012'},
+      {id:'c4',name:'Hendra Kusuma',rank:'KKM (Chief Engineer)',vessel:'v2',nationality:'Indonesia',passport:'A4567890',seamanbook:'SB-004',dob:'1982-04-18',status:'onboard',coc:'COC-KKM-004',cocExp:'2026-06-30',medExp:'2025-10-20',gmdss:'',emergency:'Maya Sari — 0815-6789-0123'},
+      {id:'c5',name:'Capt. Dedy Wahyono',rank:'Nakhoda (Master)',vessel:'v3',nationality:'Indonesia',passport:'A5678901',seamanbook:'SB-005',dob:'1976-08-30',status:'onboard',coc:'COC-NKD-005',cocExp:'2025-05-15',medExp:'2025-12-01',gmdss:'2025-07-30',emergency:'Lina Wati — 0816-7890-1234'},
+      {id:'c6',name:'Supriadi Noor',rank:'Masinis I',vessel:'v3',nationality:'Indonesia',passport:'A6789012',seamanbook:'SB-006',dob:'1985-01-25',status:'onboard',coc:'COC-MSN1-006',cocExp:'2026-01-31',medExp:'2026-01-01',gmdss:'',emergency:'Ani Kurnia — 0817-8901-2345'},
+      {id:'c7',name:'Muhamad Rizki',rank:'Mualim II',vessel:'v4',nationality:'Indonesia',passport:'A7890123',seamanbook:'SB-007',dob:'1988-09-12',status:'onboard',coc:'COC-MUA2-007',cocExp:'2026-09-30',medExp:'2026-04-01',gmdss:'2026-06-01',emergency:'Tari Oktavia — 0818-9012-3456'},
+      {id:'c8',name:'Andi Pratama',rank:'AB Deck',vessel:'v1',nationality:'Indonesia',passport:'A8901234',seamanbook:'SB-008',dob:'1990-12-08',status:'onboard',coc:'COC-ABD-008',cocExp:'2025-03-31',medExp:'2025-05-15',gmdss:'',emergency:'Sari Indah — 0819-0123-4567'},
+      {id:'c9',name:'Feri Susanto',rank:'Bosun',vessel:'v2',nationality:'Indonesia',passport:'A9012345',seamanbook:'SB-009',dob:'1987-06-20',status:'onboard',coc:'COC-BSN-009',cocExp:'2026-04-30',medExp:'2025-11-01',gmdss:'',emergency:'Wati Lestari — 0811-1234-5678'},
+      {id:'c10',name:'Surya Darma',rank:'Juru Masak',vessel:'v3',nationality:'Indonesia',passport:'A0123456',seamanbook:'SB-010',dob:'1992-03-15',status:'onboard',coc:'COC-JMK-010',cocExp:'2026-03-15',medExp:'2025-09-01',gmdss:'',emergency:'Nani Suharti — 0812-2345-6789'},
+      {id:'c11',name:'Ismail Harun',rank:'Mualim III',vessel:'',nationality:'Indonesia',passport:'B1234567',seamanbook:'SB-011',dob:'1993-07-04',status:'leave',coc:'COC-MUA3-011',cocExp:'2026-07-04',medExp:'2026-02-01',gmdss:'2026-05-01',emergency:'Yuni Astuti — 0813-3456-7890'},
+      {id:'c12',name:'Bambang Sutrisno',rank:'Masinis II',vessel:'',nationality:'Indonesia',passport:'B2345678',seamanbook:'SB-012',dob:'1986-10-28',status:'standby',coc:'COC-MSN2-012',cocExp:'2025-10-28',medExp:'2025-08-01',gmdss:'',emergency:'Rita Amalia — 0814-4567-8901'},
+      {id:'c13',name:'Yusuf Alimin',rank:'Kelasi',vessel:'v1',nationality:'Indonesia',passport:'B3456789',seamanbook:'SB-013',dob:'1995-02-14',status:'onboard',coc:'COC-KLS-013',cocExp:'2026-02-14',medExp:'2026-01-01',gmdss:'',emergency:'Ida Permata — 0815-5678-9012'},
+    ],
+    documents: [
+      {id:'d1',vessel:'v1',type:'ISM',name:'Safety Management Certificate',issuer:'BKI / Det Norske Veritas',issue:'2021-01-10',expiry:'2027-01-10',notes:''},
+      {id:'d2',vessel:'v1',type:'ISPS',name:'ISPS Code Certificate',issuer:'DJPL Kemenhub RI',issue:'2021-04-19',expiry:'2026-04-30',notes:'Renewal setiap 5 tahun'},
+      {id:'d3',vessel:'v1',type:'Registrasi',name:'Certificate of Registry (Surat Laut)',issuer:'DJPL Samarinda',issue:'2014-06-01',expiry:'2029-06-01',notes:''},
+      {id:'d4',vessel:'v2',type:'Kelas BKI',name:'Certificate of Classification',issuer:'BKI Samarinda',issue:'2020-03-05',expiry:'2025-03-05',notes:'Perpanjangan 5 tahunan'},
+      {id:'d5',vessel:'v2',type:'Load Line',name:'International Load Line Certificate',issuer:'BKI',issue:'2020-07-12',expiry:'2025-07-12',notes:''},
+      {id:'d6',vessel:'v2',type:'MARPOL',name:'MARPOL Certificate Annex I',issuer:'BKI / Kemenhub',issue:'2022-01-01',expiry:'2027-01-01',notes:''},
+      {id:'d7',vessel:'v3',type:'ISM',name:'Document of Compliance (DOC)',issuer:'BKI Jakarta',issue:'2021-08-20',expiry:'2026-08-20',notes:''},
+      {id:'d8',vessel:'v3',type:'ISPS',name:'Ship Security Certificate (SSC)',issuer:'DJPL',issue:'2022-03-01',expiry:'2027-03-01',notes:''},
+      {id:'d9',vessel:'v4',type:'Kelas BKI',name:'Certificate of Classification',issuer:'BKI Jakarta',issue:'2021-09-15',expiry:'2026-09-15',notes:'Kapal baru 2021'},
+      {id:'d10',vessel:'v4',type:'Registrasi',name:'Surat Laut / Certificate of Registry',issuer:'DJPL Samarinda',issue:'2021-10-01',expiry:'2031-10-01',notes:''},
+      {id:'d11',vessel:'v1',type:'Safety Equipment',name:'Safety Equipment Certificate',issuer:'BKI',issue:'2022-05-01',expiry:'2025-05-01',notes:''},
+    ],
+    rotations: [
+      {id:'r1',crew:'c1',vessel:'v1',rank:'Nakhoda',signOn:'2024-12-01',signOff:'2025-06-01',status:'onboard',port:'Samarinda'},
+      {id:'r2',crew:'c2',vessel:'v1',rank:'Mualim I',signOn:'2024-11-15',signOff:'2025-05-15',status:'onboard',port:'Samarinda'},
+      {id:'r3',crew:'c3',vessel:'v2',rank:'Nakhoda',signOn:'2024-10-15',signOff:'2025-04-15',status:'onboard',port:'Balikpapan'},
+      {id:'r4',crew:'c4',vessel:'v2',rank:'KKM',signOn:'2024-11-01',signOff:'2025-05-01',status:'onboard',port:'Samarinda'},
+      {id:'r5',crew:'c11',vessel:'',rank:'Mualim III',signOn:'2025-05-01',signOff:'2025-10-01',status:'leave',port:''},
+      {id:'r6',crew:'c12',vessel:'v3',rank:'Masinis II',signOn:'2025-05-01',signOff:'',status:'planned',port:'Samarinda'},
+    ],
+    mlcLogs: [
+      {id:'mlc1',crew:'c1',vessel:'v1',date:'2025-04-14',hours:11.5,rest:12.5,notes:'Jaga navigasi pagi, koordinasi tambat'},
+      {id:'mlc2',crew:'c2',vessel:'v1',date:'2025-04-14',hours:13.0,rest:11.0,notes:'Lembur operasi bongkar muatan'},
+      {id:'mlc3',crew:'c3',vessel:'v2',date:'2025-04-14',hours:14.8,rest:9.2,notes:'Lembur pelabuhan melebihi batas'},
+      {id:'mlc4',crew:'c8',vessel:'v1',date:'2025-04-14',hours:10.5,rest:13.5,notes:'Jaga normal'},
+      {id:'mlc5',crew:'c5',vessel:'v3',date:'2025-04-14',hours:9.0,rest:15.0,notes:'Jaga navigasi siang'},
+      {id:'mlc6',crew:'c6',vessel:'v3',date:'2025-04-14',hours:12.0,rest:12.0,notes:'Perawatan mesin'},
+    ],
+    incidents: [
+      {id:'i1',vessel:'v2',date:'2025-04-08T10:30',type:'Near Miss',description:'Terpeleset di area geladak utama saat kondisi hujan deras. Tidak ada cedera.',action:'Memasang safety tape anti-slip dan tanda peringatan bahaya di area basah.',severity:'medium',status:'Investigasi',investigator:'Ahmad Mabrur'},
+      {id:'i2',vessel:'v1',date:'2025-03-20T14:15',type:'Kecelakaan Personel',description:'Cedera tangan ringan pada AB Deck saat operasi muatan di pelabuhan Samarinda.',action:'Pertolongan pertama diberikan, laporan dikirim ke DPA dan manajemen darat.',severity:'high',status:'Ditutup',investigator:'Ahmad Mabrur'},
+      {id:'i3',vessel:'v3',date:'2025-02-14T08:00',type:'Near Miss',description:'Kebocoran kecil pada sistem hidrolik di ruang mesin. Segera diatasi oleh tim mesin.',action:'Perbaikan darurat oleh Masinis I. Komponen pengganti dipesan.',severity:'low',status:'Ditutup',investigator:'Ahmad Mabrur'},
+    ],
+    voyages: [
+      {id:'vy1',vessel:'v1',no:'V2025-041',from:'Samarinda',to:'Surabaya',cargo:'Alat Berat & Material Konstruksi',qty:'1.200 MT',start:'2025-04-10T08:00',eta:'2025-04-16T16:00',status:'active'},
+      {id:'vy2',vessel:'v2',no:'V2025-039',from:'Balikpapan',to:'Bitung',cargo:'Peti Kemas (Container)',qty:'800 MT',start:'2025-04-12T06:00',eta:'2025-04-18T12:00',status:'active'},
+      {id:'vy3',vessel:'v3',no:'V2025-038',from:'Samarinda',to:'Makassar',cargo:'Material Konstruksi Jalan',qty:'1.200 MT',start:'2025-04-08T07:00',eta:'2025-04-15T10:00',status:'port'},
+      {id:'vy4',vessel:'v4',no:'DOC-2025-003',from:'Samarinda',to:'Galangan Kapal',cargo:'Dry Dock Maintenance',qty:'—',start:'2025-04-01T00:00',eta:'2025-04-30T00:00',status:'port'},
+    ],
+    activities: [
+      {time:'2 jam lalu',text:'LCT. LAS 2 — Sign-ON Capt. Agus Setiawan dikonfirmasi',ship:'LCT. LAS 2',col:'var(--neon)'},
+      {time:'5 jam lalu',text:'Dokumen ISPS Code LCT. Dewa Samudera Abadi diperbarui',ship:'LCT. DEWA SAMUDERA ABADI',col:'var(--success)'},
+      {time:'1 hari lalu',text:'Pelanggaran MLC terdeteksi — Capt. Agus Setiawan melampaui 14j kerja',ship:'LCT. LAS 2',col:'var(--danger)'},
+      {time:'2 hari lalu',text:'Voyage V2025-041 dimulai dari Samarinda menuju Surabaya',ship:'LCT. DEWA SAMUDERA ABADI',col:'var(--neon2)'},
+      {time:'3 hari lalu',text:'Near-miss dilaporkan di LCT. Radja Samudera Abadi',ship:'LCT. RADJA SAMUDERA ABADI',col:'var(--warning)'},
+    ]
+  };
+}
+function loadDB() { try { const r=localStorage.getItem('las_db'); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
+function saveDB() { try { localStorage.setItem('las_db', JSON.stringify(DB)); } catch(e) { console.error('Save error',e); } }
+let DB = loadDB() || defaultData();
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+const genId = p => p + Date.now() + Math.floor(Math.random()*1000);
+const fmtDate = d => { if(!d) return '—'; return new Date(d).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}); };
+const daysLeft = d => { if(!d) return 9999; return Math.ceil((new Date(d)-new Date())/86400000); };
+const vesselName = id => { const v=DB.vessels.find(x=>x.id===id); return v?v.name:'—'; };
+const crewName = id => { const c=DB.crew.find(x=>x.id===id); return c?c.name:'—'; };
+const crewRank = id => { const c=DB.crew.find(x=>x.id===id); return c?c.rank.split('(')[0].trim():'—'; };
+const AV_COLORS = ['#0099dd','#00cc88','#ff6b35','#cc44aa','#6644cc','#00aacc','#ee6644','#44bbaa'];
+const getAvColor = name => { let h=0; for(let i=0;i<(name||'').length;i++) h=(h+(name||'').charCodeAt(i))%AV_COLORS.length; return AV_COLORS[h]; };
+const getAv = name => (name||'?').trim().split(/\s+/).map(w=>w[0]).join('').substring(0,2).toUpperCase();
+const statusInfo = {operational:{cls:'op',badge:'success',label:'Operasional'},route:{cls:'rt',badge:'info',label:'Berlayar'},drydock:{cls:'dk',badge:'warning',label:'Naik Dok'}};
+const crewStatusInfo = {onboard:{badge:'success',label:'Di Kapal'},leave:{badge:'info',label:'Cuti'},standby:{badge:'orange',label:'Standby'},medical:{badge:'danger',label:'Cuti Medis'}};
+const sevInfo = {low:{badge:'muted',label:'Rendah'},medium:{badge:'warning',label:'Sedang'},high:{badge:'danger',label:'Tinggi'},critical:{badge:'danger',label:'Kritis'}};
+
+function expBadge(d) {
+  if(!d) return '<span class="badge badge-muted">—</span>';
+  const n = daysLeft(d);
+  if(n<0) return `<span class="badge badge-danger">Kadaluarsa</span>`;
+  if(n<30) return `<span class="badge badge-danger">${n} hari lagi</span>`;
+  if(n<60) return `<span class="badge badge-warning">${n} hari lagi</span>`;
+  return `<span class="badge badge-success">Valid ✓</span>`;
+}
+function addActivity(text, ship, col='var(--neon)') {
+  DB.activities.unshift({time:'Baru saja',text,ship:ship||'—',col});
+  if(DB.activities.length>12) DB.activities.pop();
+}
+
+// ═══════════════════════════════════════
+// TOAST & MODAL
+// ═══════════════════════════════════════
+function toast(type, msg) {
+  const c = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  const icons = {s:'✅',d:'❌',w:'⚠️',i:'ℹ️'};
+  t.className = `toast t${type}`;
+  t.innerHTML = `<span>${icons[type]||'●'}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 4300);
+}
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function confirm$(msg, cb) {
+  document.getElementById('confirm-msg').textContent = msg;
+  const btn = document.getElementById('confirm-ok');
+  btn.onclick = ()=>{ cb(); closeModal('m-confirm'); };
+  openModal('m-confirm');
+}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+const PAGE_INFO = {
+  dashboard:{title:'Dashboard Armada',sub:'PT. Pelayaran Lestari Abadi Serasi — Monitoring Real-Time'},
+  fleet:{title:'Armada Kapal',sub:'CRUD Data Kapal — 4 Unit LCT Terdaftar'},
+  crew:{title:'Manajemen Kru',sub:'Data & Sertifikasi Awak Kapal'},
+  rotation:{title:'Rotasi & Penjadwalan Kru',sub:'Papan Kanban Sign-ON / Sign-OFF'},
+  mlc:{title:'Monitoring Jam Kerja MLC 2006',sub:'STCW Chapter VIII — Kepatuhan Jam Kerja & Istirahat'},
+  documents:{title:'Dokumen Kapal',sub:'Monitoring Sertifikat & Izin Resmi Armada'},
+  operations:{title:'Operasi Kapal',sub:'Voyage Tracking & Log Operasional'},
+  incidents:{title:'Manajemen Insiden',sub:'Safety Management & Near-Miss Reporting'},
+  compliance:{title:'Kepatuhan STCW & OCIMF',sub:'Validasi Kompetensi & Matriks Perwira'},
+  reports:{title:'Laporan & Analitik',sub:'Business Intelligence Armada'},
+  settings:{title:'Pengaturan Sistem',sub:'Konfigurasi Perusahaan & Notifikasi'},
+};
+function navTo(page) {
+  CUR_PAGE = page;
+  document.querySelectorAll('.ni').forEach(el=>el.classList.remove('active'));
+  const el = document.querySelector(`.ni[data-page="${page}"]`);
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pg = document.getElementById(`page-${page}`);
+  if(pg) pg.classList.add('active');
+  const info = PAGE_INFO[page]||{title:page,sub:''};
+  document.getElementById('tb-title').textContent = info.title;
+  document.getElementById('tb-sub').textContent = info.sub;
+  document.getElementById('notif-panel').classList.remove('open');
+  renderPage(page);
+}
+function renderPage(page) {
+  const map = {
+    dashboard:renderDashboard, fleet:renderFleet, crew:renderCrewPage,
+    rotation:renderRotation, mlc:renderMlcPage, documents:renderDocuments,
+    operations:renderOperations, incidents:renderIncidents,
+    compliance:renderCompliance, reports:renderReports,
+  };
+  if(map[page]) map[page]();
+}
+
+// ═══════════════════════════════════════
+// REACTIVE KPI BADGES (always update)
+// ═══════════════════════════════════════
+function updateGlobal() {
+  const mlcV = DB.mlcLogs.filter(l=>l.rest<10||l.hours>14).length;
+  const docsN = DB.documents.filter(d=>daysLeft(d.expiry)<60).length;
+  const nb = document.getElementById('nb-mlc');
+  const nd = document.getElementById('nb-docs');
+  if(nb){ nb.textContent=mlcV; nb.style.display=mlcV>0?'':'none'; }
+  if(nd){ nd.textContent=docsN; nd.style.display=docsN>0?'':'none'; }
+  document.getElementById('notif-dot').style.display=(mlcV+docsN)>0?'block':'none';
+  // Update KPI on dashboard if visible
+  if(CUR_PAGE==='dashboard') updateKPIs();
+}
+
+// Register reactive listeners
+EB.on(EV.VESSEL_CHANGE, ()=>{ saveDB(); updateGlobal(); if(CUR_PAGE==='fleet')renderFleet(); if(CUR_PAGE==='dashboard')renderDashboard(); if(CUR_PAGE==='operations')renderOperations(); if(CUR_PAGE==='reports')renderReports(); populateDropdowns(); });
+EB.on(EV.CREW_CHANGE, ()=>{ saveDB(); updateGlobal(); if(CUR_PAGE==='crew')renderCrewPage(); if(CUR_PAGE==='rotation')renderRotation(); if(CUR_PAGE==='dashboard')renderDashboard(); if(CUR_PAGE==='compliance')renderCompliance(); if(CUR_PAGE==='reports')renderReports(); populateDropdowns(); });
+EB.on(EV.DOC_CHANGE, ()=>{ saveDB(); updateGlobal(); if(CUR_PAGE==='documents')renderDocuments(); if(CUR_PAGE==='dashboard')renderDashboard(); if(CUR_PAGE==='compliance')renderCompliance(); });
+EB.on(EV.MLC_CHANGE, ()=>{ saveDB(); updateGlobal(); if(CUR_PAGE==='mlc')renderMlcPage(); if(CUR_PAGE==='dashboard')renderDashboard(); });
+EB.on(EV.ROTATION_CHANGE, ()=>{ saveDB(); updateGlobal(); if(CUR_PAGE==='rotation')renderRotation(); if(CUR_PAGE==='crew')renderCrewPage(); if(CUR_PAGE==='dashboard')renderDashboard(); });
+EB.on(EV.INCIDENT_CHANGE, ()=>{ saveDB(); updateGlobal(); if(CUR_PAGE==='incidents')renderIncidents(); if(CUR_PAGE==='dashboard')renderDashboard(); });
+EB.on(EV.VOYAGE_CHANGE, ()=>{ saveDB(); updateGlobal(); if(CUR_PAGE==='operations')renderOperations(); if(CUR_PAGE==='dashboard')renderDashboard(); });
+
+// ═══════════════════════════════════════
+// POPULATE DROPDOWNS (shared across pages)
+// ═══════════════════════════════════════
+function populateDropdowns() {
+  const vesselOpts = DB.vessels.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+  const vesselOptsMaybe = `<option value="">— Belum Ditugaskan —</option>` + vesselOpts;
+  const crewOpts = DB.crew.map(c=>`<option value="${c.id}">${c.name} — ${c.rank.split('(')[0].trim()}</option>`).join('');
+
+  // Crew modal vessel
+  const cvEl = document.getElementById('cr-vessel');
+  if(cvEl) cvEl.innerHTML = vesselOptsMaybe;
+  // Doc vessel
+  ['d-vessel','inc-vessel','voy-vessel','mlc-vessel-sel'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=vesselOpts; });
+  // Rotation crew + vessel
+  const rcEl = document.getElementById('rot-crew');
+  if(rcEl) rcEl.innerHTML = crewOpts;
+  const rvEl = document.getElementById('rot-vessel');
+  if(rvEl) rvEl.innerHTML = vesselOpts;
+  // MLC crew
+  const mcEl = document.getElementById('mlc-crew-sel');
+  if(mcEl) mcEl.innerHTML = crewOpts;
+  // Vessel filters in tables
+  const vFilterOpts = `<option value="">Semua Kapal</option>` + vesselOpts;
+  ['crew-vessel-filter','doc-v-filter','mlc-filter-vessel','rot-filter-vessel'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) { const cur=el.value; el.innerHTML=vFilterOpts; el.value=cur; }
+  });
+}
+
+// ═══════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════
+function renderDashboard() {
+  updateKPIs();
+  renderFleetCards();
+  renderAlerts();
+  renderTimeline();
+  initMainChart('kru');
+  initCrewChart();
+}
+function updateKPIs() {
+  const v = DB.vessels, c = DB.crew, d = DB.documents, m = DB.mlcLogs;
+  const vesOp = v.filter(x=>x.status!=='drydock').length;
+  const docsExp = d.filter(x=>daysLeft(x.expiry)<60).length;
+  const mlcV = m.filter(x=>x.rest<10||x.hours>14).length;
+  const kc=document.getElementById('kpi-crew'),kv=document.getElementById('kpi-vessels'),
+        kd=document.getElementById('kpi-docs'),km=document.getElementById('kpi-mlc');
+  if(kc) kc.textContent=c.length;
+  if(kv) kv.textContent=`${vesOp}/${v.length}`;
+  if(kd) kd.textContent=docsExp;
+  if(km) km.textContent=mlcV;
+  const ksub=document.getElementById('kpi-vessels-sub');
+  if(ksub){ ksub.className='sub '+(v.filter(x=>x.status==='drydock').length>0?'warn':'up'); ksub.innerHTML=`<i class="fa fa-ship"></i><span>${v.filter(x=>x.status==='drydock').length} naik dok, ${v.filter(x=>x.status==='route').length} berlayar</span>`; }
+}
+function renderFleetCards() {
+  const el = document.getElementById('dash-fleet-cards');
+  if(!el) return;
+  el.innerHTML = DB.vessels.map(v=>{
+    const si = statusInfo[v.status]||statusInfo.operational;
+    const pct = v.status==='drydock' ? Math.round((v.crew/13)*100) : 100;
+    return `<div class="vc ${si.cls}" onclick="navTo('fleet')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div><div class="vn">${v.name}</div><div class="vt">${v.type} · ${v.year} · GT ${v.gt}T</div></div>
+        <span class="badge badge-${si.badge}">${si.label}</span>
+      </div>
+      <div class="vstats">
+        <div>DWT<span>${v.dwt}T</span></div>
+        <div>LOA<span>${v.loa}m</span></div>
+        <div>Kru<span style="color:${pct<100?'var(--warning)':'var(--success)'}">${v.crew||13}/13</span></div>
+      </div>
+      <div class="prog"><div class="prog-fill ${v.status==='drydock'?'pf-orange':'pf-green'}" style="width:${pct}%"></div></div>
+      <div class="vloc"><i class="fa fa-map-marker-alt" style="color:var(--orange)"></i>${v.location||'—'}</div>
+    </div>`;
+  }).join('');
+}
+function genAlerts() {
+  const alerts = [];
+  DB.documents.forEach(d=>{
+    const days=daysLeft(d.expiry);
+    if(days<0) alerts.push({type:'danger',icon:'times-circle',msg:`<b>${d.name}</b> (${vesselName(d.vessel)}) sudah kadaluarsa!`});
+    else if(days<30) alerts.push({type:'danger',icon:'exclamation-triangle',msg:`<b>${d.name}</b> — ${vesselName(d.vessel)} kadaluarsa dalam <b>${days} hari</b>`});
+    else if(days<60) alerts.push({type:'warning',icon:'exclamation-triangle',msg:`<b>${d.name}</b> — ${vesselName(d.vessel)} kadaluarsa dalam ${days} hari`});
+  });
+  DB.mlcLogs.forEach(l=>{
+    if(l.rest<10) alerts.push({type:'danger',icon:'clock',msg:`<b>Pelanggaran MLC:</b> ${crewName(l.crew)} — hanya ${l.rest}j istirahat (min. 10j/24j)`});
+  });
+  DB.crew.forEach(c=>{
+    const d=daysLeft(c.cocExp);
+    if(d<0) alerts.push({type:'danger',icon:'certificate',msg:`<b>COC kadaluarsa:</b> ${c.name} (${c.rank.split('(')[0].trim()})`});
+    else if(d<30) alerts.push({type:'warning',icon:'certificate',msg:`<b>COC segera habis:</b> ${c.name} — ${d} hari lagi`});
+  });
+  const gapVessels = DB.vessels.filter(v=>v.status!=='drydock' && DB.crew.filter(c=>c.vessel===v.id&&c.status==='onboard').length<13);
+  gapVessels.forEach(v=>{ const onb=DB.crew.filter(c=>c.vessel===v.id&&c.status==='onboard').length; alerts.push({type:'warning',icon:'users',msg:`<b>Kru kurang:</b> ${v.name} hanya ${onb}/13 kru onboard`}); });
+  return alerts;
+}
+function renderAlerts() {
+  const el = document.getElementById('dash-alerts');
+  if(!el) return;
+  const alerts = genAlerts().slice(0,5);
+  el.innerHTML = alerts.map(a=>`<div class="alert alert-${a.type}"><i class="fa fa-${a.icon}"></i><div>${a.msg}</div></div>`).join('')
+    || '<div class="alert alert-success"><i class="fa fa-check-circle"></i><div>Tidak ada peringatan aktif saat ini</div></div>';
+}
+function renderTimeline() {
+  const el = document.getElementById('dash-timeline');
+  if(!el) return;
+  el.innerHTML = DB.activities.map(a=>`<div class="tl-item"><div class="tl-dot" style="background:${a.col}"></div><div class="tl-time">${a.time}</div><div class="tl-text">${a.text}</div><div class="tl-ship">${a.ship}</div></div>`).join('');
+}
+function refreshAll() { renderPage(CUR_PAGE); toast('s','Data diperbarui'); }
+
+// ═══════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════
+Chart.defaults.color='#5a8aaa'; Chart.defaults.borderColor='rgba(0,180,255,0.07)';
+function destroyChart(ch) { if(ch&&typeof ch.destroy==='function'){try{ch.destroy();}catch(e){}} }
+function initMainChart(type='kru') {
+  destroyChart(CHART_MAIN);
+  const ctx=document.getElementById('ch-main'); if(!ctx) return;
+  const months=['Okt','Nov','Des','Jan','Feb','Mar','Apr'];
+  const datasets={
+    kru:[{label:'Kru Onboard',data:[11,12,13,13,12,13,DB.crew.filter(c=>c.status==='onboard').length],borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,0.06)',tension:0.4,fill:true}],
+    docs:[{label:'Dokumen Valid',data:[18,18,20,19,17,17,DB.documents.filter(d=>daysLeft(d.expiry)>0).length],borderColor:'#00e5a0',backgroundColor:'rgba(0,229,160,0.06)',tension:0.4,fill:true}],
+    ops:[{label:'Voyage Aktif',data:[1,2,3,2,3,4,DB.voyages.filter(v=>v.status==='active').length],borderColor:'#ff6b35',backgroundColor:'rgba(255,107,53,0.06)',tension:0.4,fill:true}],
+  };
+  CHART_MAIN=new Chart(ctx,{type:'line',data:{labels:months,datasets:datasets[type]||datasets.kru},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10,font:{size:10}}}},scales:{x:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{font:{size:10}}},y:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{font:{size:10}}}}}});
+}
+function switchChart(type, tab) {
+  document.querySelectorAll('#page-dashboard .tabs .tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active'); initMainChart(type);
+}
+function initCrewChart() {
+  destroyChart(CHART_CREW);
+  const ctx=document.getElementById('ch-crew'); if(!ctx) return;
+  const counts=['onboard','leave','standby','medical'].map(s=>DB.crew.filter(c=>c.status===s).length);
+  CHART_CREW=new Chart(ctx,{type:'doughnut',data:{labels:['Di Kapal','Cuti','Standby','Cuti Medis'],datasets:[{data:counts,backgroundColor:['rgba(0,229,160,.7)','rgba(0,212,255,.7)','rgba(255,107,53,.7)','rgba(255,61,90,.7)'],borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});
+  const leg=document.getElementById('crew-dist-leg');
+  if(leg){
+    const cols=['var(--success)','var(--neon)','var(--orange)','var(--danger)'],labels=['Di Kapal','Cuti','Standby','Cuti Medis'];
+    leg.innerHTML=labels.map((l,i)=>`<span style="display:flex;align-items:center;gap:3px;"><span style="width:7px;height:7px;border-radius:2px;background:${cols[i]};flex-shrink:0;"></span>${l}: <b>${counts[i]}</b></span>`).join('');
+  }
+}
+function initReportsCharts() {
+  destroyChart(CHART_ROT);
+  const ctx=document.getElementById('ch-rot'); if(!ctx) return;
+  CHART_ROT=new Chart(ctx,{type:'bar',data:{labels:['Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des','Jan','Feb','Mar','Apr'],datasets:[{label:'Sign-ON',data:[3,4,3,5,3,4,3,4,4,4,3,5],backgroundColor:'rgba(0,212,255,.45)',borderRadius:3},{label:'Sign-OFF',data:[3,3,4,4,4,3,4,3,4,3,4,4],backgroundColor:'rgba(0,229,160,.35)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{font:{size:10}}}}}});
+  destroyChart(CHART_RANK);
+  const ctx2=document.getElementById('ch-rank'); if(!ctx2) return;
+  const rc={};
+  DB.crew.forEach(c=>{ const r=c.rank.split('(')[0].trim().split(' ')[0]; rc[r]=(rc[r]||0)+1; });
+  CHART_RANK=new Chart(ctx2,{type:'doughnut',data:{labels:Object.keys(rc),datasets:[{data:Object.values(rc),backgroundColor:['rgba(0,212,255,.7)','rgba(0,229,160,.65)','rgba(255,107,53,.65)','rgba(204,68,170,.65)','rgba(100,68,204,.65)','rgba(0,170,204,.65)','rgba(238,102,68,.65)'],borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:9}}}}}});
+  destroyChart(CHART_DOC);
+  const ctx3=document.getElementById('ch-doc-trend'); if(!ctx3) return;
+  const validNow=DB.documents.filter(d=>daysLeft(d.expiry)>0).length;
+  const expNow=DB.documents.filter(d=>daysLeft(d.expiry)<=0).length;
+  CHART_DOC=new Chart(ctx3,{type:'line',data:{labels:['Okt','Nov','Des','Jan','Feb','Mar','Apr'],datasets:[{label:'Valid',data:[18,18,20,19,17,17,validNow],borderColor:'var(--success)',tension:0.4,fill:false},{label:'Kadaluarsa',data:[1,1,0,1,2,3,expNow],borderColor:'var(--danger)',tension:0.4,fill:false,borderDash:[4,4]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'rgba(0,180,255,0.05)'},ticks:{font:{size:10}}}}}});
+  destroyChart(CHART_COMP);
+  const ctx4=document.getElementById('ch-comp'); if(!ctx4) return;
+  const vNames=DB.vessels.map(v=>v.name.replace('LCT. ','').substring(0,14));
+  const scores=DB.vessels.map(v=>{ const vc=DB.crew.filter(c=>c.vessel===v.id); if(!vc.length) return 0; return Math.round(vc.filter(c=>daysLeft(c.cocExp)>30).length/vc.length*100); });
+  CHART_COMP=new Chart(ctx4,{type:'bar',data:{labels:vNames,datasets:[{label:'Kepatuhan (%)',data:scores,backgroundColor:scores.map(s=>s>=90?'rgba(0,229,160,.5)':s>=70?'rgba(255,176,32,.5)':'rgba(255,61,90,.5)'),borderWidth:0,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{min:0,max:100,grid:{color:'rgba(0,180,255,0.05)'},ticks:{font:{size:10},callback:v=>v+'%'}},y:{grid:{display:false},ticks:{font:{size:9}}}}}});
+}
+
+// ═══════════════════════════════════════
+// FLEET PAGE
+// ═══════════════════════════════════════
+function renderFleet() {
+  const list = FLEET_FILTER==='all' ? DB.vessels : DB.vessels.filter(v=>v.status===FLEET_FILTER);
+  const el = document.getElementById('fleet-grid');
+  const sub = document.getElementById('fleet-sub');
+  if(sub) sub.textContent = `${list.length} dari ${DB.vessels.length} kapal${FLEET_FILTER!=='all'?' (difilter)':''}`;
+  if(!el) return;
+  el.innerHTML = list.map(v=>{
+    const si = statusInfo[v.status]||statusInfo.operational;
+    return `<div class="vc ${si.cls}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div><div class="vn">🚢 ${v.name}</div><div class="vt">${v.type} · BKI ${v.year} · ${v.port}</div></div>
+        <span class="badge badge-${si.badge}">${si.label}</span>
+      </div>
+      <div class="sep" style="margin:8px 0;"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:9px;font-size:10px;">
+        <div class="vstats">GT<span>${v.gt}T</span></div>
+        <div class="vstats">DWT<span>${v.dwt}T</span></div>
+        <div class="vstats">LOA<span>${v.loa}m</span></div>
+        <div class="vstats">Lebar<span>${v.breadth}m</span></div>
+        <div class="vstats">Kedalaman<span>${v.depth||'—'}m</span></div>
+        <div class="vstats">Kru<span style="color:${(v.crew||13)<13?'var(--warning)':'var(--success)'}">${v.crew||13}/13</span></div>
+      </div>
+      <div style="font-size:10px;color:var(--text-400);margin-bottom:5px;"><i class="fa fa-cog" style="color:var(--neon);margin-right:4px;"></i>${v.engine||'—'}</div>
+      ${v.notes?`<div style="font-size:9.5px;color:var(--text-600);margin-bottom:7px;">${v.notes}</div>`:''}
+      <div class="vloc mb12"><i class="fa fa-map-marker-alt" style="color:var(--orange)"></i>${v.location||'—'}</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        <button class="btn btn-ghost btn-sm" onclick="navTo('documents')"><i class="fa fa-file-alt"></i> Dokumen</button>
+        <button class="btn btn-ghost btn-sm" onclick="navTo('operations')"><i class="fa fa-route"></i> Voyage</button>
+        <button class="btn btn-ghost btn-sm" onclick="editVessel('${v.id}')"><i class="fa fa-edit"></i> Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteVessel('${v.id}')"><i class="fa fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('') || '<div style="color:var(--text-400);font-size:12px;padding:20px;grid-column:1/-1;">Tidak ada kapal dengan filter ini.</div>';
+}
+function setFleetFilter(f, tab) {
+  FLEET_FILTER = f;
+  document.querySelectorAll('#fleet-filter-tabs .tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  renderFleet();
+}
+function openVesselModal(id='') {
+  const el = id ? DB.vessels.find(x=>x.id===id) : null;
+  document.getElementById('v-id').value = id;
+  document.getElementById('vessel-modal-ttl').textContent = id ? 'Edit Data Kapal' : 'Tambah Kapal Baru';
+  const fields = {name:'',type:'LCT',gt:'',dwt:'',loa:'',breadth:'',depth:'',draft:'',year:'',cls:'BKI',port:'Samarinda',flag:'Indonesia',engine:'',status:'operational',crew:13,location:'',notes:''};
+  Object.keys(fields).forEach(k=>{ const fld=document.getElementById(`v-${k}`); if(fld) fld.value=el?el[k]:fields[k]; });
+  openModal('m-vessel');
+}
+function editVessel(id) { openVesselModal(id); }
+function saveVessel() {
+  const id = document.getElementById('v-id').value;
+  const get = i => { const el=document.getElementById(i); return el?el.value:''; };
+  const data = {
+    name:get('v-name').trim(),type:get('v-type'),gt:+get('v-gt')||0,dwt:+get('v-dwt')||0,
+    loa:+get('v-loa')||0,breadth:+get('v-breadth')||0,depth:+get('v-depth')||0,draft:+get('v-draft')||0,
+    year:+get('v-year')||new Date().getFullYear(),cls:get('v-class'),port:get('v-port'),flag:get('v-flag'),
+    engine:get('v-engine'),status:get('v-status'),crew:+get('v-crew')||13,location:get('v-location'),notes:get('v-notes')
+  };
+  if(!data.name){toast('d','Nama kapal wajib diisi');return;}
+  if(id){const idx=DB.vessels.findIndex(v=>v.id===id);if(idx>-1)DB.vessels[idx]={...DB.vessels[idx],...data};}
+  else DB.vessels.push({id:genId('v'),...data});
+  addActivity(`Kapal ${data.name} ${id?'diperbarui':'ditambahkan'}`,data.name);
+  closeModal('m-vessel'); toast('s',id?'Kapal diperbarui':'Kapal baru ditambahkan');
+  EB.emit(EV.VESSEL_CHANGE);
+}
+function deleteVessel(id) {
+  const v=DB.vessels.find(x=>x.id===id);
+  confirm$(`Hapus kapal "${v?.name}"? Data terkait (dokumen, voyage) tidak ikut terhapus.`,()=>{
+    DB.vessels=DB.vessels.filter(x=>x.id!==id);
+    addActivity(`Kapal ${v?.name} dihapus dari sistem`,'Sistem');
+    toast('s','Kapal dihapus'); EB.emit(EV.VESSEL_CHANGE);
+  });
+}
+
+// ═══════════════════════════════════════
+// CREW PAGE
+// ═══════════════════════════════════════
+function renderCrewPage() {
+  populateDropdowns();
+  const counts = ['onboard','leave','standby','medical'];
+  counts.forEach(s=>{ const el=document.getElementById(`cs-${s}`); if(el) el.textContent=DB.crew.filter(c=>c.status===s).length; });
+  const sub = document.getElementById('crew-page-sub');
+  if(sub) sub.textContent = `${DB.crew.length} kru terdaftar — ${DB.crew.filter(c=>c.status==='onboard').length} sedang onboard`;
+  renderCrewTable();
+}
+function renderCrewTable() {
+  const vFilter = document.getElementById('crew-vessel-filter')?.value||'';
+  let list = DB.crew;
+  if(CREW_FILTER!=='all') list=list.filter(c=>c.status===CREW_FILTER);
+  if(CREW_SEARCH) list=list.filter(c=>c.name.toLowerCase().includes(CREW_SEARCH)||c.rank.toLowerCase().includes(CREW_SEARCH));
+  if(vFilter) list=list.filter(c=>c.vessel===vFilter);
+  const tbody=document.getElementById('crew-tbody');
+  if(!tbody) return;
+  tbody.innerHTML=list.map(c=>{
+    const av=getAv(c.name),col=getAvColor(c.name);
+    const si=crewStatusInfo[c.status]||crewStatusInfo.standby;
+    return `<tr>
+      <td><div class="cav-row"><div class="cav" style="background:${col}">${av}</div><div class="cinfo"><div class="c1">${c.name}</div><div class="c2">${c.rank}</div></div></div></td>
+      <td style="font-size:11px;">${c.rank.split('(')[0].trim()}</td>
+      <td style="font-size:11px;color:var(--neon)">${c.vessel?vesselName(c.vessel):'—'}</td>
+      <td style="font-size:11px;">${c.nationality||'Indonesia'}</td>
+      <td><span class="badge badge-${si.badge}">${si.label}</span></td>
+      <td>${expBadge(c.cocExp)}</td>
+      <td>${expBadge(c.medExp)}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-xs" onclick="editCrew('${c.id}')"><i class="fa fa-edit"></i></button>
+        <button class="btn btn-danger btn-xs" onclick="deleteCrew('${c.id}')"><i class="fa fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="8" style="text-align:center;padding:18px;color:var(--text-400);">Tidak ada data kru</td></tr>`;
+}
+function setCrewFilter(f,tab){
+  CREW_FILTER=f;
+  document.querySelectorAll('#crew-filter-tabs .tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active'); renderCrewTable();
+}
+function onCrewSearch(v){CREW_SEARCH=v.toLowerCase();renderCrewTable();}
+function openCrewModal(id='') {
+  populateDropdowns();
+  const c=id?DB.crew.find(x=>x.id===id):null;
+  document.getElementById('cr-id').value=id;
+  document.getElementById('crew-modal-ttl').textContent=id?'Edit Data Kru':'Tambah Kru Baru';
+  const def={name:'',rank:'Nakhoda (Master)',nat:'Indonesia',dob:'',pass:'',sb:'',vessel:'',status:'onboard',coc:'',cocExp:'',med:'',gmdss:'',emr:''};
+  const map={name:'cr-name',rank:'cr-rank',nat:'cr-nat',dob:'cr-dob',pass:'cr-pass',sb:'cr-sb',vessel:'cr-vessel',status:'cr-status',coc:'cr-coc',cocExp:'cr-coc-exp',med:'cr-med',gmdss:'cr-gmdss',emr:'cr-emr'};
+  const src={name:c?.name||'',rank:c?.rank||def.rank,nat:c?.nationality||'Indonesia',dob:c?.dob||'',pass:c?.passport||'',sb:c?.seamanbook||'',vessel:c?.vessel||'',status:c?.status||'onboard',coc:c?.coc||'',cocExp:c?.cocExp||'',med:c?.medExp||'',gmdss:c?.gmdss||'',emr:c?.emergency||''};
+  Object.keys(map).forEach(k=>{const el=document.getElementById(map[k]);if(el)el.value=src[k];});
+  openModal('m-crew');
+}
+function editCrew(id){openCrewModal(id);}
+function saveCrew() {
+  const id=document.getElementById('cr-id').value;
+  const g=i=>{const el=document.getElementById(i);return el?el.value.trim():'';};
+  const data={name:g('cr-name'),rank:g('cr-rank'),nationality:g('cr-nat'),dob:g('cr-dob'),passport:g('cr-pass'),seamanbook:g('cr-sb'),vessel:g('cr-vessel'),status:g('cr-status'),coc:g('cr-coc'),cocExp:g('cr-coc-exp'),medExp:g('cr-med'),gmdss:g('cr-gmdss'),emergency:g('cr-emr')};
+  if(!data.name){toast('d','Nama kru wajib diisi');return;}
+  if(id){const idx=DB.crew.findIndex(c=>c.id===id);if(idx>-1)DB.crew[idx]={...DB.crew[idx],...data};}
+  else DB.crew.push({id:genId('c'),...data});
+  addActivity(`${data.name} ${id?'data diperbarui':'ditambahkan sebagai kru'}`,data.vessel?vesselName(data.vessel):'Pool');
+  closeModal('m-crew'); toast('s',id?'Data kru diperbarui':'Kru baru ditambahkan');
+  EB.emit(EV.CREW_CHANGE);
+}
+function deleteCrew(id) {
+  const c=DB.crew.find(x=>x.id===id);
+  confirm$(`Hapus data kru "${c?.name}"?`,()=>{ DB.crew=DB.crew.filter(x=>x.id!==id); addActivity(`Kru ${c?.name} dihapus`,'Sistem'); toast('s','Data kru dihapus'); EB.emit(EV.CREW_CHANGE); });
+}
+
+// ═══════════════════════════════════════
+// ROTATION — Fixed Kanban with correct labels & data
+// ═══════════════════════════════════════
+const ROT_COLS = [
+  {key:'leave',    label:'Cuti',                    color:'var(--neon)',    badge:'info'},
+  {key:'planned',  label:'Direncanakan',             color:'var(--text-400)',badge:'muted'},
+  {key:'enroute',  label:'Dalam Perjalanan (En Route)',color:'var(--warning)',badge:'warning'},
+  {key:'onboard',  label:'Di Kapal (Onboard)',       color:'var(--success)', badge:'success'},
+];
+const rotStatusLabel = k => ({leave:'Cuti',planned:'Direncanakan',enroute:'En Route',onboard:'Di Kapal'}[k]||k);
+
+function renderRotation() {
+  populateDropdowns();
+  renderKanban();
+  renderGapAnalysis();
+  renderRotationTable();
+}
+function renderKanban() {
+  const board=document.getElementById('kanban-board');
+  if(!board) return;
+  board.innerHTML=ROT_COLS.map(col=>{
+    const cards=DB.rotations.filter(r=>r.status===col.key);
+    return `<div class="kc">
+      <div class="kc-head">${col.label} <span style="color:${col.color};font-weight:800;">${cards.length}</span></div>
+      ${cards.map(r=>{
+        const c=DB.crew.find(x=>x.id===r.crew);
+        const av=c?getAv(c.name):'?';
+        const col2=c?getAvColor(c.name):'#555';
+        return `<div class="kcard" onclick="editRotation('${r.id}')">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
+            <div style="width:24px;height:24px;border-radius:6px;background:${col2};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;">${av}</div>
+            <div><div class="kn">${c?c.name:'Tidak dikenal'}</div></div>
+          </div>
+          <div class="kr">${r.rank}</div>
+          <div class="ks">${r.vessel?vesselName(r.vessel):'Belum ditentukan'}</div>
+          ${r.port?`<div class="ks">📍 ${r.port}</div>`:''}
+          <div class="kd">${r.signOn?fmtDate(r.signOn):'?'} → ${r.signOff?fmtDate(r.signOff):'?'}</div>
+          ${col.key==='planned'&&c&&daysLeft(c.cocExp)<30?`<div style="font-size:9px;color:var(--danger);margin-top:3px;">⚠ COC segera habis!</div>`:''}
+        </div>`;
+      }).join('')||`<div style="font-size:10px;color:var(--text-600);padding:8px 4px;text-align:center;">Tidak ada data</div>`}
+    </div>`;
+  }).join('');
+}
+function renderGapAnalysis() {
+  const el=document.getElementById('gap-alerts');
+  if(!el) return;
+  const gaps=[];
+  DB.vessels.filter(v=>v.status!=='drydock').forEach(v=>{
+    const onb=DB.crew.filter(c=>c.vessel===v.id&&c.status==='onboard').length;
+    if(onb<13) gaps.push(`<div class="alert alert-warning"><i class="fa fa-exclamation-triangle"></i><div><b>GAP ANALISIS — ${v.name}:</b> Hanya <b>${onb}/13</b> kru onboard. Diperlukan <b>${13-onb} pengganti</b>. <a href="#" onclick="openRotationModal()" style="color:var(--warning);font-weight:600;text-decoration:underline;">Jadwalkan rotasi →</a></div></div>`);
+  });
+  el.innerHTML=gaps.join('');
+}
+function renderRotationTable() {
+  const vFilter=document.getElementById('rot-filter-vessel')?.value||'';
+  let list=DB.rotations;
+  if(vFilter) list=list.filter(r=>r.vessel===vFilter);
+  const tbody=document.getElementById('rot-tbody');
+  if(!tbody) return;
+  tbody.innerHTML=list.map(r=>{
+    const c=DB.crew.find(x=>x.id===r.crew);
+    return `<tr>
+      <td><div class="cav-row"><div class="cav" style="background:${c?getAvColor(c.name):'#555'};width:28px;height:28px;font-size:10px;">${c?getAv(c.name):'?'}</div><div class="cinfo"><div class="c1">${c?c.name:'—'}</div><div class="c2" style="color:var(--text-400);font-size:9px;">${c?c.rank:''}</div></div></div></td>
+      <td style="font-size:11px;">${r.rank}</td>
+      <td style="font-size:11px;color:var(--neon)">${r.vessel?vesselName(r.vessel):'—'}</td>
+      <td style="font-size:11px;color:var(--text-400)">${r.port||'—'}</td>
+      <td class="mono" style="font-size:10px;">${fmtDate(r.signOn)}</td>
+      <td class="mono" style="font-size:10px;">${r.signOff?fmtDate(r.signOff):'—'}</td>
+      <td><span class="badge badge-${ROT_COLS.find(c=>c.key===r.status)?.badge||'muted'}">${rotStatusLabel(r.status)}</span></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-xs" onclick="editRotation('${r.id}')"><i class="fa fa-edit"></i></button>
+        <button class="btn btn-danger btn-xs" onclick="deleteRotation('${r.id}')"><i class="fa fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--text-400);">Tidak ada data rotasi</td></tr>`;
+}
+function openRotationModal(id='') {
+  populateDropdowns();
+  const r=id?DB.rotations.find(x=>x.id===id):null;
+  document.getElementById('rot-id').value=id;
+  document.getElementById('rot-modal-ttl').textContent=id?'Edit Jadwal Rotasi':'Jadwalkan Rotasi Baru';
+  if(r){
+    document.getElementById('rot-crew').value=r.crew||'';
+    document.getElementById('rot-vessel').value=r.vessel||'';
+    document.getElementById('rot-rank').value=r.rank||'Nakhoda';
+    document.getElementById('rot-status').value=r.status||'planned';
+    document.getElementById('rot-port').value=r.port||'';
+    document.getElementById('rot-on').value=r.signOn||'';
+    document.getElementById('rot-off').value=r.signOff||'';
+    document.getElementById('rot-notes').value=r.notes||'';
+  } else {
+    ['rot-crew','rot-vessel'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('rot-on').value=new Date().toISOString().split('T')[0];
+    document.getElementById('rot-off').value='';
+    document.getElementById('rot-notes').value='';
+    document.getElementById('rot-status').value='planned';
+    document.getElementById('rot-port').value='';
+  }
+  openModal('m-rotation');
+}
+function editRotation(id){openRotationModal(id);}
+function saveRotation() {
+  const id=document.getElementById('rot-id').value;
+  const g=i=>{const el=document.getElementById(i);return el?el.value:''};
+  const data={crew:g('rot-crew'),vessel:g('rot-vessel'),rank:g('rot-rank'),status:g('rot-status'),port:g('rot-port'),signOn:g('rot-on'),signOff:g('rot-off'),notes:g('rot-notes')};
+  if(!data.crew){toast('d','Pilih kru terlebih dahulu');return;}
+  if(id){const idx=DB.rotations.findIndex(r=>r.id===id);if(idx>-1)DB.rotations[idx]={...DB.rotations[idx],...data};}
+  else DB.rotations.push({id:genId('r'),...data});
+  addActivity(`Rotasi ${crewName(data.crew)} — ${rotStatusLabel(data.status)}`,data.vessel?vesselName(data.vessel):'—');
+  closeModal('m-rotation'); toast('s',id?'Rotasi diperbarui':'Rotasi berhasil dijadwalkan');
+  EB.emit(EV.ROTATION_CHANGE);
+}
+function deleteRotation(id) {
+  confirm$('Hapus jadwal rotasi ini?',()=>{ DB.rotations=DB.rotations.filter(r=>r.id!==id); toast('s','Rotasi dihapus'); EB.emit(EV.ROTATION_CHANGE); });
+}
+
+// ═══════════════════════════════════════
+// MLC PAGE
+// ═══════════════════════════════════════
+function renderMlcPage() {
+  populateDropdowns();
+  const viols=DB.mlcLogs.filter(l=>l.rest<10||l.hours>14);
+  const risk=DB.mlcLogs.filter(l=>l.rest>=10&&l.rest<11&&l.hours<=14);
+  const pct=DB.mlcLogs.length?Math.round(DB.mlcLogs.filter(l=>l.rest>=10&&l.hours<=14).length/DB.mlcLogs.length*100):100;
+  const ids={viol:viols.length,risk:risk.length,mon:DB.mlcLogs.length,pct:pct+'%'};
+  Object.keys(ids).forEach(k=>{const el=document.getElementById(`mlc-${k}`);if(el)el.textContent=ids[k];});
+  renderMlcTable();
+  buildMlcGrid();
+}
+function renderMlcTable() {
+  const vFilter=document.getElementById('mlc-filter-vessel')?.value||'';
+  let logs=DB.mlcLogs;
+  if(vFilter) logs=logs.filter(l=>l.vessel===vFilter);
+  const tbody=document.getElementById('mlc-tbody');
+  if(!tbody) return;
+  tbody.innerHTML=logs.map(l=>{
+    const c=DB.crew.find(x=>x.id===l.crew);
+    const viol=l.rest<10||l.hours>14;
+    const warn=!viol&&(l.rest<11||l.hours>13);
+    return `<tr>
+      <td><div class="cav-row"><div class="cav" style="background:${c?getAvColor(c.name):'#555'};width:28px;height:28px;font-size:10px;">${c?getAv(c.name):'?'}</div><div class="cinfo"><div class="c1" style="font-size:12px;">${c?c.name:'—'}</div></div></div></td>
+      <td style="font-size:10px;color:var(--text-400);">${c?c.rank.split('(')[0].trim():'—'}</td>
+      <td style="font-size:11px;color:var(--neon)">${l.vessel?vesselName(l.vessel):c&&c.vessel?vesselName(c.vessel):'—'}</td>
+      <td class="mono" style="font-size:10px;">${fmtDate(l.date)}</td>
+      <td><span class="mono" style="color:${l.hours>14?'var(--danger)':l.hours>13?'var(--warning)':'var(--success)'}">${l.hours}j</span></td>
+      <td><span class="mono" style="color:${l.rest<10?'var(--danger)':l.rest<11?'var(--warning)':'var(--success)'}">${l.rest}j</span></td>
+      <td><span class="badge badge-${viol?'danger':warn?'warning':'success'}">${viol?'⛔ Pelanggaran':warn?'⚠ Berisiko':'✓ Patuh'}</span></td>
+      <td><button class="btn btn-danger btn-xs" onclick="deleteMlc('${l.id}')"><i class="fa fa-trash"></i></button></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--text-400);">Belum ada data jam kerja</td></tr>`;
+}
+function buildMlcGrid() {
+  const el=document.getElementById('mlc-grid');
+  if(!el) return;
+  const data=DB.mlcLogs.slice(-7).map(l=>({ hours:l.hours, rest:l.rest, viol:l.rest<10||l.hours>14 }));
+  while(data.length<7) data.push({hours:0,rest:24,viol:false});
+  // 4 rows × 7 cols: show work blocks per day
+  const rows=[]; for(let r=0;r<4;r++){ for(let d=0;d<7;d++){ const l=data[d]; let cls='mlc-r'; if(l.viol&&r<2) cls='mlc-v'; else if(l.hours>0&&r<Math.round(l.hours/6)) cls='mlc-w'; rows.push(cls); } }
+  el.innerHTML=rows.map((c,i)=>`<div class="mlcc ${c}" title="${c==='mlc-w'?'Kerja':c==='mlc-v'?'Pelanggaran':'Istirahat'}">${c==='mlc-w'?'W':c==='mlc-v'?'!':'Z'}</div>`).join('');
+  const leg=document.getElementById('mlc-grid-legend');
+  if(leg){
+    const viols=data.filter(l=>l.viol).length;
+    leg.textContent=viols>0?`⚠ ${viols} hari dengan pelanggaran MLC terdeteksi`:'✓ Tidak ada pelanggaran dalam 7 hari terakhir';
+    leg.style.color=viols>0?'var(--danger)':'var(--success)';
+  }
+}
+function openMlcModal() { populateDropdowns(); document.getElementById('mlc-date').value=new Date().toISOString().split('T')[0]; document.getElementById('mlc-hours').value=''; document.getElementById('mlc-rest').value=''; document.getElementById('mlc-notes').value=''; document.getElementById('mlc-violation-warn').style.display='none'; openModal('m-mlc'); }
+document.addEventListener('input',e=>{
+  if(e.target.id==='mlc-hours'||e.target.id==='mlc-rest'){
+    const h=+document.getElementById('mlc-hours').value||0;
+    const r=+document.getElementById('mlc-rest').value||0;
+    const w=document.getElementById('mlc-violation-warn');
+    if(w) w.style.display=(h>14||r<10)?'flex':'none';
+  }
+});
+function saveMlc() {
+  const data={crew:document.getElementById('mlc-crew-sel').value,vessel:document.getElementById('mlc-vessel-sel').value,date:document.getElementById('mlc-date').value,hours:+document.getElementById('mlc-hours').value||0,rest:+document.getElementById('mlc-rest').value||0,notes:document.getElementById('mlc-notes').value};
+  if(!data.crew||!data.date){toast('d','Pilih kru dan tanggal');return;}
+  if(data.rest<10||data.hours>14) toast('w','⚠ Pelanggaran MLC! Email dikirim ke ahmadmabrur.lasshipping@gmail.com');
+  DB.mlcLogs.push({id:genId('mlc'),...data});
+  addActivity(`Log jam kerja ${crewName(data.crew)} dicatat`,data.vessel?vesselName(data.vessel):'—');
+  closeModal('m-mlc'); toast('s','Log jam kerja disimpan'); EB.emit(EV.MLC_CHANGE);
+}
+function deleteMlc(id){confirm$('Hapus log jam kerja ini?',()=>{DB.mlcLogs=DB.mlcLogs.filter(l=>l.id!==id);toast('s','Log dihapus');EB.emit(EV.MLC_CHANGE);});}
+
+// ═══════════════════════════════════════
+// DOCUMENTS PAGE
+// ═══════════════════════════════════════
+function renderDocuments() {
+  populateDropdowns();
+  const vf=document.getElementById('doc-v-filter')?.value||'';
+  const tf=document.getElementById('doc-t-filter')?.value||'';
+  let docs=DB.documents;
+  if(vf) docs=docs.filter(d=>d.vessel===vf);
+  if(tf) docs=docs.filter(d=>d.type===tf);
+  const expired=docs.filter(d=>daysLeft(d.expiry)<0).length;
+  const soon=docs.filter(d=>{const x=daysLeft(d.expiry);return x>=0&&x<60;}).length;
+  const valid=docs.filter(d=>daysLeft(d.expiry)>=60).length;
+  ['doc-total','doc-valid','doc-soon','doc-expired'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[docs.length,valid,soon,expired][i];});
+  // Urgent alerts
+  const urgEl=document.getElementById('doc-urgent-alerts');
+  if(urgEl){
+    const urg=DB.documents.filter(d=>{const x=daysLeft(d.expiry);return x<30&&x>=0;});
+    urgEl.innerHTML=urg.map(d=>`<div class="alert alert-danger mb8"><i class="fa fa-exclamation-triangle"></i><div><b>URGENT:</b> <b>${d.name}</b> (${vesselName(d.vessel)}) kadaluarsa dalam <b>${daysLeft(d.expiry)} hari</b> pada ${fmtDate(d.expiry)}. <span style="text-decoration:underline;cursor:pointer;" onclick="sendDocAlert('${d.id}')">Kirim email peringatan</span></div></div>`).join('');
+  }
+  const tbody=document.getElementById('doc-tbody');
+  if(!tbody) return;
+  tbody.innerHTML=docs.map(d=>{
+    const days=daysLeft(d.expiry);
+    return `<tr>
+      <td style="font-size:12px;font-weight:600;">${d.name}</td>
+      <td style="font-size:11px;color:var(--neon)">${vesselName(d.vessel)}</td>
+      <td><span class="badge badge-info">${d.type}</span></td>
+      <td style="font-size:10px;color:var(--text-400);">${d.issuer||'—'}</td>
+      <td class="mono" style="font-size:10px;">${fmtDate(d.issue)}</td>
+      <td class="mono" style="font-size:10px;">${fmtDate(d.expiry)}</td>
+      <td class="mono" style="font-size:11px;color:${days<0?'var(--danger)':days<30?'var(--danger)':days<60?'var(--warning)':'var(--success)'}">${days<0?'Kadaluarsa':days<9000?days+'hr':'∞'}</td>
+      <td>${expBadge(d.expiry)}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-ghost btn-xs" onclick="editDoc('${d.id}')"><i class="fa fa-edit"></i></button>
+        <button class="btn btn-danger btn-xs" onclick="deleteDoc('${d.id}')"><i class="fa fa-trash"></i></button>
+        ${days<60&&days>=0?`<button class="btn btn-orange btn-xs" onclick="sendDocAlert('${d.id}')" title="Kirim Email Alert"><i class="fa fa-envelope"></i></button>`:''}
+      </td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text-400);">Tidak ada dokumen</td></tr>`;
+}
+function openDocModal(id='') {
+  populateDropdowns();
+  const d=id?DB.documents.find(x=>x.id===id):null;
+  document.getElementById('doc-id').value=id;
+  document.getElementById('doc-modal-ttl').textContent=id?'Edit Dokumen':'Upload Dokumen Baru';
+  document.getElementById('d-vessel').value=d?.vessel||'';
+  document.getElementById('d-type').value=d?.type||'ISM';
+  document.getElementById('d-name').value=d?.name||'';
+  document.getElementById('d-issue').value=d?.issue||'';
+  document.getElementById('d-expiry').value=d?.expiry||'';
+  document.getElementById('d-issuer').value=d?.issuer||'';
+  document.getElementById('d-notes').value=d?.notes||'';
+  openModal('m-doc');
+}
+function editDoc(id){openDocModal(id);}
+function saveDoc() {
+  const id=document.getElementById('doc-id').value;
+  const g=i=>{const el=document.getElementById(i);return el?el.value.trim():'';};
+  const data={vessel:g('d-vessel'),type:g('d-type'),name:g('d-name'),issue:g('d-issue'),expiry:g('d-expiry'),issuer:g('d-issuer'),notes:g('d-notes')};
+  if(!data.name||!data.vessel){toast('d','Nama dokumen dan kapal wajib diisi');return;}
+  if(id){const idx=DB.documents.findIndex(d=>d.id===id);if(idx>-1)DB.documents[idx]={...DB.documents[idx],...data};}
+  else DB.documents.push({id:genId('d'),...data});
+  addActivity(`Dokumen ${data.name} ${id?'diperbarui':'diupload'}`,vesselName(data.vessel));
+  closeModal('m-doc'); toast('s',id?'Dokumen diperbarui':'Dokumen berhasil diupload');
+  EB.emit(EV.DOC_CHANGE);
+}
+function deleteDoc(id) {
+  const d=DB.documents.find(x=>x.id===id);
+  confirm$(`Hapus dokumen "${d?.name}"?`,()=>{ DB.documents=DB.documents.filter(x=>x.id!==id); toast('s','Dokumen dihapus'); EB.emit(EV.DOC_CHANGE); });
+}
+function sendDocAlert(id) { const d=DB.documents.find(x=>x.id===id); toast('s',`Email alert untuk "${d?.name}" dikirim ke ahmadmabrur.lasshipping@gmail.com`); }
+
+// ═══════════════════════════════════════
+// OPERATIONS PAGE
+// ═══════════════════════════════════════
+function renderOperations() {
+  populateDropdowns();
+  const sailing=DB.vessels.filter(v=>v.status==='route').length;
+  const port=DB.vessels.filter(v=>v.status==='operational').length;
+  const dock=DB.vessels.filter(v=>v.status==='drydock').length;
+  const voy=DB.voyages.filter(v=>v.status==='active').length;
+  ['op-sailing','op-port','op-dock','op-voy'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[sailing,port,dock,voy][i];});
+  const opsList=document.getElementById('ops-list');
+  if(opsList) opsList.innerHTML=DB.vessels.map(v=>{
+    const voyage=DB.voyages.find(vy=>vy.vessel===v.id&&vy.status==='active');
+    const prog=v.status==='drydock'?46:voyage?65:100;
+    const si=statusInfo[v.status]||statusInfo.operational;
+    return `<div style="background:var(--glass-bg2);border:1px solid var(--glass-border2);border-radius:9px;padding:12px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+        <div style="font-weight:700;font-size:13px;">${v.name}</div>
+        <span class="badge badge-${si.badge}">${si.label}</span>
+      </div>
+      ${voyage?`<div style="font-size:11px;color:var(--text-400);margin-bottom:4px;">${voyage.no} · ${voyage.from} → ${voyage.to} · ${voyage.cargo}</div>`:''}
+      <div class="prog mb8"><div class="prog-fill ${v.status==='drydock'?'pf-orange':'pf-blue'}" style="width:${prog}%"></div></div>
+      <div style="font-size:10px;color:var(--text-400);">📍 ${v.location||'—'} ${voyage?`· ETA: ${fmtDate(voyage.eta)}`:''}</div>
+      <div style="display:flex;gap:5px;margin-top:7px;">
+        <button class="btn btn-ghost btn-xs" onclick="editVessel('${v.id}')"><i class="fa fa-edit"></i> Update Status</button>
+        <button class="btn btn-ghost btn-xs" onclick="openVoyageModal('${v.id}')"><i class="fa fa-plus"></i> Tambah Voyage</button>
+      </div>
+    </div>`;
+  }).join('');
+  renderVoyageTable();
+}
+function renderVoyageTable() {
+  const tbody=document.getElementById('voy-tbody');
+  if(!tbody) return;
+  tbody.innerHTML=DB.voyages.map(vy=>{ const vstatus={active:'success',port:'warning',completed:'muted',planned:'info'}; const vLabel={active:'Berlayar',port:'Di Pelabuhan',completed:'Selesai',planned:'Direncanakan'};
+    return `<tr>
+      <td class="mono" style="font-size:11px;">${vy.no}</td>
+      <td style="font-size:11px;color:var(--neon)">${vesselName(vy.vessel)}</td>
+      <td style="font-size:11px;">${vy.from} → ${vy.to}</td>
+      <td style="font-size:11px;">${vy.cargo}${vy.qty?` (${vy.qty})`:''}</td>
+      <td class="mono" style="font-size:10px;">${fmtDate(vy.start)}</td>
+      <td class="mono" style="font-size:10px;">${fmtDate(vy.eta)}</td>
+      <td><span class="badge badge-${vstatus[vy.status]||'muted'}">${vLabel[vy.status]||vy.status}</span></td>
+      <td><button class="btn btn-danger btn-xs" onclick="deleteVoyage('${vy.id}')"><i class="fa fa-trash"></i></button></td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--text-400);">Tidak ada data voyage</td></tr>`;
+}
+function openVoyageModal(vesselId='') { populateDropdowns(); if(vesselId){const el=document.getElementById('voy-vessel');if(el)el.value=vesselId;} document.getElementById('voy-start').value=new Date().toISOString().slice(0,16); openModal('m-voyage'); }
+function saveVoyage() {
+  const g=i=>{const el=document.getElementById(i);return el?el.value.trim():'';};
+  const data={vessel:g('voy-vessel'),no:g('voy-no'),from:g('voy-from'),to:g('voy-to'),cargo:g('voy-cargo'),qty:g('voy-qty'),start:g('voy-start'),eta:g('voy-eta'),status:g('voy-status')};
+  if(!data.vessel||!data.no){toast('d','Kapal dan nomor voyage wajib diisi');return;}
+  DB.voyages.push({id:genId('vy'),...data});
+  addActivity(`Voyage ${data.no} dicatat: ${data.from} → ${data.to}`,vesselName(data.vessel));
+  closeModal('m-voyage'); toast('s','Voyage berhasil dicatat'); EB.emit(EV.VOYAGE_CHANGE);
+}
+function deleteVoyage(id){confirm$('Hapus voyage ini?',()=>{DB.voyages=DB.voyages.filter(v=>v.id!==id);toast('s','Voyage dihapus');EB.emit(EV.VOYAGE_CHANGE);});}
+
+// ═══════════════════════════════════════
+// INCIDENTS PAGE
+// ═══════════════════════════════════════
+function renderIncidents() {
+  populateDropdowns();
+  const now=new Date();
+  const thisMonth=DB.incidents.filter(i=>new Date(i.date).getMonth()===now.getMonth()).length;
+  const invest=DB.incidents.filter(i=>i.status==='Investigasi').length;
+  const last=DB.incidents.length?Math.max(0,Math.ceil((now-new Date(DB.incidents[DB.incidents.length-1].date))/86400000)):0;
+  ['inc-total','inc-month','inc-invest','inc-zero'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[DB.incidents.length,thisMonth,invest,last+' hari'][i];});
+  const tbody=document.getElementById('inc-tbody');
+  if(!tbody) return;
+  tbody.innerHTML=DB.incidents.map(i=>{ const si=sevInfo[i.severity]||sevInfo.low;
+    return `<tr>
+      <td class="mono" style="font-size:10px;">${fmtDate(i.date)}</td>
+      <td style="font-size:11px;color:var(--neon)">${vesselName(i.vessel)}</td>
+      <td><span class="badge badge-info">${i.type}</span></td>
+      <td style="font-size:11px;max-width:160px;color:var(--text-200);">${i.description}</td>
+      <td style="font-size:10px;max-width:130px;color:var(--text-400);">${i.action||'—'}</td>
+      <td><span class="badge badge-${si.badge}">${si.label}</span></td>
+      <td><span class="badge badge-${i.status==='Ditutup'?'success':'warning'}">${i.status}</span></td>
+      <td style="font-size:10px;color:var(--text-400);">${i.investigator||'—'}</td>
+      <td style="white-space:nowrap;">
+        ${i.status!=='Ditutup'?`<button class="btn btn-success btn-xs" onclick="closeIncident('${i.id}')"><i class="fa fa-check"></i></button>`:''}
+        <button class="btn btn-danger btn-xs" onclick="deleteIncident('${i.id}')"><i class="fa fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text-400);">Tidak ada insiden tercatat — Armada aman! ✓</td></tr>`;
+}
+function openIncidentModal(){populateDropdowns();document.getElementById('inc-date').value=new Date().toISOString().slice(0,16);document.getElementById('inc-desc').value='';document.getElementById('inc-action').value='';openModal('m-incident');}
+function saveIncident() {
+  const g=i=>{const el=document.getElementById(i);return el?el.value.trim():'';};
+  const data={vessel:g('inc-vessel'),date:g('inc-date'),type:g('inc-type'),description:g('inc-desc'),action:g('inc-action'),severity:g('inc-sev'),status:'Investigasi',investigator:'Ahmad Mabrur'};
+  if(!data.description){toast('d','Deskripsi insiden wajib diisi');return;}
+  DB.incidents.push({id:genId('i'),...data});
+  addActivity(`⚠ Insiden dilaporkan: ${data.type}`,vesselName(data.vessel),'var(--danger)');
+  closeModal('m-incident'); toast('w','Insiden dilaporkan. Email dikirim ke DPA & ahmadmabrur.lasshipping@gmail.com');
+  EB.emit(EV.INCIDENT_CHANGE);
+}
+function closeIncident(id){const i=DB.incidents.find(x=>x.id===id);if(i){i.status='Ditutup';addActivity(`Insiden ditutup`,vesselName(i.vessel));saveDB();renderIncidents();toast('s','Insiden ditutup');EB.emit(EV.INCIDENT_CHANGE);}}
+function deleteIncident(id){confirm$('Hapus laporan insiden ini?',()=>{DB.incidents=DB.incidents.filter(i=>i.id!==id);saveDB();renderIncidents();toast('s','Insiden dihapus');EB.emit(EV.INCIDENT_CHANGE);});}
+
+// ═══════════════════════════════════════
+// COMPLIANCE PAGE
+// ═══════════════════════════════════════
+function renderCompliance() {
+  initReportsCharts(); // reuse for comp chart
+  const total=DB.crew.length;
+  const expired=DB.crew.filter(c=>daysLeft(c.cocExp)<0).length;
+  const soon=DB.crew.filter(c=>{const d=daysLeft(c.cocExp);return d>=0&&d<60;}).length;
+  const valid=total-expired-soon;
+  const pct=total?Math.round(valid/total*100):0;
+  ['comp-pct','comp-valid','comp-soon','comp-exp'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[pct+'%',valid,soon,expired][i];});
+  const ranks=['Nakhoda (Master)','Mualim I (Chief Officer)','Mualim II','Mualim III','KKM (Chief Engineer)','Masinis I','Masinis II','Bosun','AB Deck'];
+  const tbody=document.getElementById('comp-tbody');
+  if(!tbody) return;
+  const stcwRegs={'Nakhoda':'STCW II/2','Mualim I':'STCW II/2','Mualim II':'STCW II/1','Mualim III':'STCW II/1','KKM':'STCW III/2','Masinis I':'STCW III/1','Masinis II':'STCW III/1','Bosun':'STCW II/5','AB Deck':'STCW II/5'};
+  tbody.innerHTML=ranks.map(rk=>{
+    const rKey=rk.split('(')[0].trim();
+    const crew=DB.crew.filter(c=>c.rank.startsWith(rKey));
+    const allOk=crew.length&&crew.every(c=>daysLeft(c.cocExp)>30);
+    const medOk=crew.length&&crew.every(c=>daysLeft(c.medExp)>0);
+    const gmdssNeeded=['Nakhoda','Mualim I','Mualim II','Mualim III'].some(r=>rk.startsWith(r));
+    const ecdisNeeded=['Nakhoda','Mualim I'].some(r=>rk.startsWith(r));
+    const ok=`<span class="badge badge-success">✓</span>`;
+    const na=`<span class="badge badge-muted">N/A</span>`;
+    const warn=`<span class="badge badge-warning">⚠</span>`;
+    const pctVal=crew.length?Math.round(crew.filter(c=>daysLeft(c.cocExp)>30).length/crew.length*100):100;
+    return `<tr>
+      <td style="font-size:12px;font-weight:600;">${rKey}</td>
+      <td class="mono" style="font-size:10px;">${stcwRegs[rKey]||'STCW'}</td>
+      <td>${crew.length?allOk?ok:warn:na}</td>
+      <td>${ok}</td>
+      <td>${gmdssNeeded?ok:na}</td>
+      <td>${ecdisNeeded?ok:na}</td>
+      <td>${crew.length?medOk?ok:warn:na}</td>
+      <td><span class="badge badge-${pctVal>=90?'success':pctVal>=70?'warning':'danger'}">${pctVal}%</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// REPORTS PAGE
+// ═══════════════════════════════════════
+function renderReports() {
+  initReportsCharts();
+  const eff=Math.round(DB.vessels.filter(v=>v.status!=='drydock').length/DB.vessels.length*100);
+  const util=Math.round(DB.crew.filter(c=>c.status==='onboard').length/DB.crew.length*100);
+  ['rep-eff','rep-util','rep-ontime','rep-voyage'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=[eff+'%',util+'%','94%',DB.voyages.length][i];});
+  const sum=document.getElementById('rep-summary');
+  if(sum) sum.innerHTML=`<div style="display:flex;flex-direction:column;gap:7px;">`+DB.vessels.map(v=>{
+    const vc=DB.crew.filter(c=>c.vessel===v.id);
+    const vd=DB.documents.filter(d=>d.vessel===v.id);
+    const vExp=vd.filter(d=>daysLeft(d.expiry)<60).length;
+    const si=statusInfo[v.status]||statusInfo.operational;
+    return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--glass-border2);font-size:12px;">
+      <div><div style="font-weight:600;">${v.name}</div><div style="font-size:10px;color:var(--text-400);">${v.type} · DWT ${v.dwt}T</div></div>
+      <div style="text-align:right;"><span class="badge badge-${si.badge}">${si.label}</span><div style="font-size:10px;color:var(--text-400);margin-top:3px;">${vc.length} kru · ${vExp>0?`<span style="color:var(--warning)">${vExp} dok habis</span>`:'✓ Dok ok'}</div></div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+// ═══════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════
+function toggleNotif() {
+  const p=document.getElementById('notif-panel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')){
+    const alerts=genAlerts();
+    const list=document.getElementById('notif-list');
+    list.innerHTML=alerts.length?alerts.map(a=>`<div style="padding:9px;background:var(--glass-bg2);border:1px solid var(--glass-border2);border-radius:8px;margin-bottom:5px;"><div class="alert alert-${a.type}" style="padding:5px 8px;margin:0;border-radius:6px;font-size:11px;"><i class="fa fa-${a.icon}"></i><span>${a.msg}</span></div></div>`).join(''):'<div style="text-align:center;color:var(--text-400);font-size:12px;padding:20px;">Tidak ada notifikasi aktif ✓</div>';
+  }
+}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+function saveSettings(){ toast('s','Pengaturan berhasil disimpan'); }
+
+// ═══════════════════════════════════════
+// GLOBAL SEARCH
+// ═══════════════════════════════════════
+function onSearch(val) {
+  if(!val||val.length<2) return;
+  const v=val.toLowerCase();
+  const vRes=DB.vessels.filter(x=>x.name.toLowerCase().includes(v));
+  const cRes=DB.crew.filter(x=>x.name.toLowerCase().includes(v));
+  const dRes=DB.documents.filter(x=>x.name.toLowerCase().includes(v));
+  const total=vRes.length+cRes.length+dRes.length;
+  if(total>0) toast('i',`Ditemukan: ${vRes.length} kapal, ${cRes.length} kru, ${dRes.length} dokumen`);
+}
+
+// ═══════════════════════════════════════
+// LANGUAGE TOGGLE
+// ═══════════════════════════════════════
+let LANG = 'id';
+function toggleLang() {
+  LANG = LANG==='id'?'en':'id';
+  document.getElementById('lang-btn').style.color=LANG==='en'?'var(--neon)':'';
+  toast('i', LANG==='en' ? 'Language switched to English' : 'Bahasa diubah ke Indonesia');
+}
+
+// ═══════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════
+function updateClock() {
+  const el=document.getElementById('dash-clock');
+  if(el) el.textContent=new Date().toLocaleString('id-ID',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════
+// INIT APP
+// ═══════════════════════════════════════
+function initApp() {
+  populateDropdowns();
+  updateGlobal();
+  navTo('dashboard');
+}
+
+// Auto-login
+window.addEventListener('DOMContentLoaded', ()=>{
+  const saved=localStorage.getItem('las_user');
+  if(saved){
+    try{
+      CUR_USER=JSON.parse(saved);
+      document.getElementById('login-page').style.display='none';
+      document.getElementById('app').style.display='flex';
+      setUserUI(); initApp();
+    }catch(e){ localStorage.removeItem('las_user'); }
+  }
+});
+</script>
+</body>
+</html>

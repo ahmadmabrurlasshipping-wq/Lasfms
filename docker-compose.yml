@@ -1,0 +1,125 @@
+version: "3.9"
+
+# ============================================================
+# LAS Fleet Monitoring System — Docker Compose
+# PT. Pelayaran Lestari Abadi Serasi
+#
+# Jalankan: docker-compose up -d --build
+# ============================================================
+
+services:
+
+  # ─── PostgreSQL Database ──────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: las_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       las_fms
+      POSTGRES_USER:     las_admin
+      POSTGRES_PASSWORD: ${DB_PASS:-lasadmin2024}
+      PGDATA:            /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U las_admin -d las_fms"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - las_net
+
+  # ─── Backend API ──────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: las_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV:       production
+      PORT:           3001
+      DB_HOST:        postgres
+      DB_PORT:        5432
+      DB_NAME:        las_fms
+      DB_USER:        las_admin
+      DB_PASS:        ${DB_PASS:-lasadmin2024}
+      JWT_SECRET:     ${JWT_SECRET:-las_jwt_secret_2024}
+      EMAIL_SERVICE:  ${EMAIL_SERVICE:-gmail}
+      EMAIL_USER:     ${EMAIL_USER:-ahmadmabrur.lasshipping@gmail.com}
+      EMAIL_PASS:     ${EMAIL_PASS:-}
+      ALERT_EMAIL:    ${ALERT_EMAIL:-ahmadmabrur.lasshipping@gmail.com}
+      FRONTEND_URL:   ${FRONTEND_URL:-*}
+    volumes:
+      - uploads_data:/app/uploads
+      - ./public:/app/public:ro
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - las_net
+
+  # ─── Nginx Reverse Proxy ──────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: las_nginx
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./public:/usr/share/nginx/html:ro
+      - uploads_data:/usr/share/nginx/uploads:ro
+      - certbot_www:/var/www/certbot:ro
+      - certbot_conf:/etc/letsencrypt:ro
+    networks:
+      - las_net
+
+  # ─── Certbot (SSL — Let's Encrypt) ───────────────────
+  certbot:
+    image: certbot/certbot:latest
+    container_name: las_certbot
+    volumes:
+      - certbot_www:/var/www/certbot
+      - certbot_conf:/etc/letsencrypt
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
+    networks:
+      - las_net
+
+  # ─── pgAdmin (opsional, akses DB GUI) ─────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: las_pgadmin
+    restart: unless-stopped
+    profiles: ["tools"]
+    environment:
+      PGADMIN_DEFAULT_EMAIL:    admin@lasshipping.co.id
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASS:-admin123}
+    ports:
+      - "127.0.0.1:5050:80"
+    networks:
+      - las_net
+
+volumes:
+  postgres_data:
+  uploads_data:
+  certbot_www:
+  certbot_conf:
+
+networks:
+  las_net:
+    driver: bridge
